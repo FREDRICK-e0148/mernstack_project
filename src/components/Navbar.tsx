@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -14,6 +16,7 @@ const navLinks = [
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-sport-dark/95 backdrop-blur-md border-b border-primary/20">
@@ -41,6 +44,17 @@ const Navbar = () => {
           <Button size="sm" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-xs">
             <Phone className="w-3 h-3 mr-1" /> Call Now
           </Button>
+          {user ? (
+            <Button size="sm" variant="outline" onClick={signOut} className="border-primary/40 text-primary hover:bg-primary/10 uppercase tracking-wider text-xs">
+              <LogOut className="w-3 h-3 mr-1" /> Logout
+            </Button>
+          ) : (
+            <Link to="/login">
+              <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 uppercase tracking-wider text-xs">
+                <LogIn className="w-3 h-3 mr-1" /> Login
+              </Button>
+            </Link>
+          )}
         </div>
 
         <button className="md:hidden text-primary-foreground" onClick={() => setOpen(!open)}>
