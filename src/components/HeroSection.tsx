@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Star, Trophy, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -39,9 +40,11 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-wrap gap-4 mb-10">
-              <Button size="lg" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-8 group">
-                Enroll Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              <Link to="/login">
+                <Button size="lg" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-8 group">
+                  Enroll Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
               <Button size="lg" variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold uppercase tracking-wider text-sm px-8">
                 View Programs
               </Button>
