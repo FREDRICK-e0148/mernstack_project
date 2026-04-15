@@ -44,16 +44,10 @@ const Navbar = () => {
           <Button size="sm" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-xs">
             <Phone className="w-3 h-3 mr-1" /> Call Now
           </Button>
-          {user ? (
+          {user && (
             <Button size="sm" variant="outline" onClick={signOut} className="border-primary/40 text-primary hover:bg-primary/10 uppercase tracking-wider text-xs">
               <LogOut className="w-3 h-3 mr-1" /> Logout
             </Button>
-          ) : (
-            <Link to="/login">
-              <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 uppercase tracking-wider text-xs">
-                <LogIn className="w-3 h-3 mr-1" /> Login
-              </Button>
-            </Link>
           )}
         </div>
 
