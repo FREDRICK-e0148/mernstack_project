@@ -1,19 +1,23 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Mail, ArrowRight, Loader2, CheckCircle } from "lucide-react";
+import { Mail, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSendLink = async () => {
+  const handleSendOtp = async () => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
       return;
@@ -21,17 +25,31 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: window.location.origin,
-        },
-      });
+      const { error } = await supabase.auth.signInWithOtp({ email });
       if (error) throw error;
-      setSent(true);
-      toast({ title: "Link Sent! 📧", description: "Check your email and click the verification link." });
+      setStep("otp");
+      toast({ title: "OTP Sent! 📧", description: "Check your email for the 6-digit code." });
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to send link", variant: "destructive" });
+      toast({ title: "Error", description: err.message || "Failed to send OTP", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) {
+      toast({ title: "Invalid OTP", description: "Please enter the 6-digit code.", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
+      if (error) throw error;
+      toast({ title: "Welcome! 🎉", description: "You're now logged in." });
+      navigate("/enroll");
+    } catch (err: any) {
+      toast({ title: "Verification failed", description: err.message || "Invalid or expired code.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -62,17 +80,17 @@ const LoginPage = () => {
         <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
           <CardHeader className="text-center pb-2">
             <CardTitle className="font-display text-3xl text-sport-dark-foreground tracking-wider">
-              {sent ? "CHECK YOUR EMAIL" : "LOGIN"}
+              {step === "email" ? "LOGIN / SIGN UP" : "VERIFY OTP"}
             </CardTitle>
             <p className="text-muted-foreground text-sm mt-1">
-              {sent
-                ? "We sent a magic link to your email. Click it to log in!"
-                : "Enter your email to receive a login link"}
+              {step === "email"
+                ? "Enter your email to receive a 6-digit verification code"
+                : `Enter the 6-digit code sent to ${email}`}
             </p>
           </CardHeader>
 
           <CardContent className="space-y-5 pt-4">
-            {!sent ? (
+            {step === "email" ? (
               <>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
@@ -81,34 +99,53 @@ const LoginPage = () => {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSendLink()}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendOtp()}
                     className="pl-11 bg-sport-dark/50 border-primary/30 text-sport-dark-foreground placeholder:text-muted-foreground/50 h-12 text-lg"
                   />
                 </div>
                 <Button
-                  onClick={handleSendLink}
+                  onClick={handleSendOtp}
                   disabled={loading || !email}
                   className="w-full bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider h-12 text-sm group"
                 >
                   {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <>Send Login Link <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" /></>
+                    <>Send OTP <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" /></>
                   )}
                 </Button>
               </>
             ) : (
-              <div className="text-center space-y-4 py-4">
-                <CheckCircle className="w-16 h-16 text-primary mx-auto" />
-                <p className="text-sport-dark-foreground text-lg font-semibold">
-                  Link sent to <span className="text-primary">{email}</span>
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  Open your email and click the login link. You'll be redirected back automatically.
-                </p>
+              <div className="space-y-5">
+                <div className="flex justify-center">
+                  <ShieldCheck className="w-12 h-12 text-primary" />
+                </div>
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} className="bg-sport-dark/50 border-primary/30 text-sport-dark-foreground text-xl w-12 h-14" />
+                      <InputOTPSlot index={1} className="bg-sport-dark/50 border-primary/30 text-sport-dark-foreground text-xl w-12 h-14" />
+                      <InputOTPSlot index={2} className="bg-sport-dark/50 border-primary/30 text-sport-dark-foreground text-xl w-12 h-14" />
+                      <InputOTPSlot index={3} className="bg-sport-dark/50 border-primary/30 text-sport-dark-foreground text-xl w-12 h-14" />
+                      <InputOTPSlot index={4} className="bg-sport-dark/50 border-primary/30 text-sport-dark-foreground text-xl w-12 h-14" />
+                      <InputOTPSlot index={5} className="bg-sport-dark/50 border-primary/30 text-sport-dark-foreground text-xl w-12 h-14" />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                <Button
+                  onClick={handleVerifyOtp}
+                  disabled={loading || otp.length !== 6}
+                  className="w-full bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider h-12 text-sm group"
+                >
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>Verify & Continue <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" /></>
+                  )}
+                </Button>
                 <button
-                  onClick={() => { setSent(false); setEmail(""); }}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors uppercase tracking-wider"
+                  onClick={() => { setStep("email"); setOtp(""); }}
+                  className="w-full text-sm text-primary hover:text-primary/80 transition-colors uppercase tracking-wider"
                 >
                   ← Use a different email
                 </button>

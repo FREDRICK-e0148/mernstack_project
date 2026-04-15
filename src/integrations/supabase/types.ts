@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      enrollment_candidates: {
+        Row: {
+          address: string
+          contact_no: string
+          created_at: string
+          dob: string
+          email: string
+          enrollment_id: string
+          height: string | null
+          id: string
+          name: string
+          photo_url: string | null
+          updated_at: string
+          weight: string | null
+        }
+        Insert: {
+          address: string
+          contact_no: string
+          created_at?: string
+          dob: string
+          email: string
+          enrollment_id: string
+          height?: string | null
+          id?: string
+          name: string
+          photo_url?: string | null
+          updated_at?: string
+          weight?: string | null
+        }
+        Update: {
+          address?: string
+          contact_no?: string
+          created_at?: string
+          dob?: string
+          email?: string
+          enrollment_id?: string
+          height?: string | null
+          id?: string
+          name?: string
+          photo_url?: string | null
+          updated_at?: string
+          weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_candidates_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrollments: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
