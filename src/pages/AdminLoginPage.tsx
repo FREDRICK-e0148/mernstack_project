@@ -128,9 +128,6 @@ const AdminLoginPage = () => {
                 <>Sign In <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" /></>
               )}
             </Button>
-            <p className="text-xs text-muted-foreground/60 text-center pt-2">
-              Default credentials: <span className="text-primary">fsa@321</span> / <span className="text-primary">fsa@321</span>
-            </p>
           </CardContent>
         </Card>
 
