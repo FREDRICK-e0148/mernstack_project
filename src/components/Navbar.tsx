@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Menu, X, Phone, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, X, Shield, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,8 +41,8 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <Button size="sm" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-xs">
-            <Phone className="w-3 h-3 mr-1" /> Call Now
+          <Button asChild size="sm" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-xs">
+            <Link to="/admin-login"><Shield className="w-3 h-3 mr-1" /> Admin Login</Link>
           </Button>
           {user && (
             <Button size="sm" variant="outline" onClick={signOut} className="border-primary/40 text-primary hover:bg-primary/10 uppercase tracking-wider text-xs">
@@ -74,8 +75,8 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <Button size="sm" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-xs w-full mt-2">
-                <Phone className="w-3 h-3 mr-1" /> Call Now
+              <Button asChild size="sm" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-xs w-full mt-2">
+                <Link to="/admin-login" onClick={() => setOpen(false)}><Shield className="w-3 h-3 mr-1" /> Admin Login</Link>
               </Button>
             </div>
           </motion.div>
