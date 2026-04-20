@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import EnrollmentPage from "./pages/EnrollmentPage.tsx";
+import AdminLoginPage from "./pages/AdminLoginPage.tsx";
+import AdminDashboardPage from "./pages/AdminDashboardPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/enroll" element={<EnrollmentPage />} />
+            <Route path="/admin-login" element={<AdminLoginPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
