@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Audiowide&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -100,8 +100,18 @@
   .font-display {
     font-family: 'Bebas Neue', sans-serif;
   }
+  .font-aqua {
+    font-family: 'Audiowide', 'Bebas Neue', sans-serif;
+    letter-spacing: 0.08em;
+  }
   .text-gradient-sport {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-aqua {
+    background: linear-gradient(135deg, hsl(190 95% 60%), hsl(170 90% 55%), hsl(210 100% 65%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -114,5 +124,49 @@
       hsl(var(--primary) / 0.05) 10px,
       hsl(var(--primary) / 0.05) 20px
     );
+  }
+  .bg-aqua-deep {
+    background:
+      radial-gradient(ellipse at 20% 10%, hsl(195 100% 35% / 0.55), transparent 55%),
+      radial-gradient(ellipse at 80% 90%, hsl(170 100% 30% / 0.45), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, hsl(210 100% 25% / 0.4), transparent 60%),
+      linear-gradient(180deg, hsl(215 80% 6%), hsl(200 90% 10%) 60%, hsl(190 95% 14%));
+  }
+  .aqua-caustics {
+    background-image:
+      radial-gradient(circle at 30% 20%, hsl(180 100% 70% / 0.10) 0, transparent 30%),
+      radial-gradient(circle at 70% 60%, hsl(190 100% 75% / 0.10) 0, transparent 35%),
+      radial-gradient(circle at 50% 90%, hsl(160 100% 60% / 0.08) 0, transparent 40%);
+    animation: aqua-shimmer 12s ease-in-out infinite;
+  }
+  @keyframes aqua-shimmer {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+    50% { transform: translate(-2%, 2%) scale(1.05); opacity: 1; }
+  }
+  @keyframes wave-flow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .aqua-wave {
+    background: linear-gradient(90deg, transparent, hsl(190 100% 60% / 0.25), transparent);
+    background-size: 50% 100%;
+    animation: wave-flow 8s linear infinite;
+  }
+  @keyframes bubble-rise {
+    0% { transform: translateY(0) scale(0.6); opacity: 0; }
+    20% { opacity: 0.6; }
+    100% { transform: translateY(-120vh) scale(1.2); opacity: 0; }
+  }
+  .bubble {
+    position: absolute;
+    bottom: -40px;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 30% 30%, hsl(190 100% 90% / 0.9), hsl(190 100% 70% / 0.2) 60%, transparent 70%);
+    box-shadow: inset 0 0 6px hsl(190 100% 80% / 0.4);
+    animation: bubble-rise linear infinite;
+    pointer-events: none;
+  }
+  .glow-aqua {
+    box-shadow: 0 0 30px hsl(190 100% 50% / 0.35), inset 0 0 20px hsl(190 100% 60% / 0.1);
   }
 }
