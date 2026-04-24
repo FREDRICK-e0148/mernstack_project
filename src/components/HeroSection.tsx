@@ -45,9 +45,6 @@ const HeroSection = () => {
                   Enroll Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold uppercase tracking-wider text-sm px-8">
-                View Programs
-              </Button>
             </div>
 
             {/* Stats */}
