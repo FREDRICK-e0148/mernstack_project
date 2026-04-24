@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Banknote, Smartphone, Check, ArrowLeft, Loader2, CheckCircle, Waves } from "lucide-react";
-import AquaBackground from "@/components/AquaBackground";
+import { CreditCard, Banknote, Smartphone, Check, ArrowLeft, Loader2, CheckCircle, Trophy } from "lucide-react";
 import { Plan } from "@/lib/plans";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,46 +38,55 @@ const PaymentPage = () => {
     await new Promise((r) => setTimeout(r, 1400));
     setProcessing(false);
     setDone(true);
-    toast({ title: "Payment recorded! 🌊", description: method === "cash" ? "Pay at the academy on your first visit." : "We'll confirm your payment shortly." });
+    toast({ title: "Payment recorded!", description: method === "cash" ? "Pay at the academy on your first visit." : "We'll confirm your payment shortly." });
   };
 
   if (!plan) return null;
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center px-4 py-10 overflow-hidden">
-      <AquaBackground bubbles={20} />
+    <div className="min-h-screen relative flex items-center justify-center px-4 py-10 overflow-hidden bg-sport-dark">
+      {/* Diagonal stripes background — match homepage */}
+      <div className="absolute inset-0 diagonal-stripe opacity-30" />
+      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px]" />
+      <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-primary via-accent to-secondary" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-lg relative z-10"
       >
         <div className="text-center mb-6">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center mx-auto mb-3 glow-aqua">
-            <Waves className="w-7 h-7 text-white" />
+          <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/30 rounded-full px-4 py-1.5 mb-4">
+            <Trophy className="w-4 h-4 text-secondary fill-secondary" />
+            <span className="text-xs font-semibold text-primary uppercase tracking-wider">Step 3 of 3 — Payment</span>
           </div>
-          <h1 className="font-aqua text-3xl text-white tracking-wider">CHECKOUT</h1>
+          <h1 className="text-4xl md:text-5xl font-display text-sport-dark-foreground tracking-wide">
+            <span className="text-gradient-sport">CHECKOUT</span>
+          </h1>
         </div>
 
-        <Card className="bg-white/5 backdrop-blur-xl border-cyan-400/30 glow-aqua overflow-hidden">
+        <Card className="bg-sport-dark-foreground/5 backdrop-blur-xl border-2 border-primary/30 overflow-hidden shadow-[0_20px_60px_-20px_hsl(var(--primary)/0.4)]">
+          <div className="h-1 bg-gradient-to-r from-primary via-accent to-secondary" />
           <AnimatePresence mode="wait">
             {!done ? (
               <motion.div key="pay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="font-aqua text-xl text-white tracking-wider">ORDER SUMMARY</CardTitle>
+                  <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wide">ORDER SUMMARY</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  <div className="rounded-lg bg-slate-900/60 border border-cyan-400/20 p-4">
-                    <p className="text-cyan-300 text-[10px] uppercase tracking-[0.3em]">{plan.category}</p>
-                    <p className="text-white font-semibold mt-1">{plan.name}</p>
-                    <p className="text-cyan-100/70 text-xs">{plan.duration}</p>
-                    <div className="border-t border-cyan-400/20 mt-3 pt-3 flex items-baseline justify-between">
-                      <span className="text-cyan-300 text-xs uppercase tracking-wider">Total</span>
-                      <span className="font-aqua text-3xl text-gradient-aqua">₹{plan.price.toLocaleString("en-IN")}</span>
+                  <div className="rounded-lg bg-sport-dark/60 border border-primary/20 p-4">
+                    <p className="text-primary text-[10px] uppercase tracking-[0.3em] font-semibold">{plan.category}</p>
+                    <p className="text-sport-dark-foreground font-semibold mt-1">{plan.name}</p>
+                    <p className="text-muted-foreground text-xs">{plan.duration}</p>
+                    <div className="border-t border-primary/20 mt-3 pt-3 flex items-baseline justify-between">
+                      <span className="text-primary text-xs uppercase tracking-wider font-semibold">Total</span>
+                      <span className="font-display text-3xl text-gradient-sport">₹{plan.price.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-cyan-300 text-[10px] uppercase tracking-[0.25em] mb-2">Payment Method</p>
+                    <p className="text-primary text-[10px] uppercase tracking-[0.25em] mb-2 font-semibold">Payment Method</p>
                     <div className="space-y-2">
                       {methods.map((m) => {
                         const sel = method === m.id;
@@ -87,18 +95,18 @@ const PaymentPage = () => {
                           <button
                             key={m.id}
                             onClick={() => setMethod(m.id)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                            className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
                               sel
-                                ? "bg-gradient-to-r from-cyan-500/30 to-teal-500/20 border-cyan-300 glow-aqua"
-                                : "bg-slate-900/60 border-cyan-400/20 hover:border-cyan-400/50"
+                                ? "bg-primary/10 border-primary"
+                                : "bg-sport-dark/60 border-sport-dark-foreground/10 hover:border-primary/40"
                             }`}
                           >
-                            <Icon className="w-5 h-5 text-cyan-300" />
+                            <Icon className="w-5 h-5 text-primary" />
                             <div className="flex-1">
-                              <p className="text-white text-sm font-semibold">{m.label}</p>
-                              <p className="text-cyan-100/60 text-xs">{m.sub}</p>
+                              <p className="text-sport-dark-foreground text-sm font-semibold">{m.label}</p>
+                              <p className="text-muted-foreground text-xs">{m.sub}</p>
                             </div>
-                            {sel && <Check className="w-5 h-5 text-cyan-300" />}
+                            {sel && <Check className="w-5 h-5 text-primary" />}
                           </button>
                         );
                       })}
@@ -109,14 +117,14 @@ const PaymentPage = () => {
                     <Button
                       variant="outline"
                       onClick={() => navigate("/plans")}
-                      className="border-cyan-400/40 bg-slate-900/40 text-cyan-200 hover:bg-cyan-500/20 hover:text-white uppercase tracking-wider text-xs flex-1"
+                      className="border-primary/40 bg-transparent text-sport-dark-foreground hover:bg-primary/10 hover:text-sport-dark-foreground uppercase tracking-wider text-xs flex-1"
                     >
                       <ArrowLeft className="w-4 h-4 mr-1" /> Change Plan
                     </Button>
                     <Button
                       onClick={handlePay}
                       disabled={!method || processing}
-                      className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-white font-semibold uppercase tracking-wider text-xs flex-1"
+                      className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-xs flex-1"
                     >
                       {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : `Pay ₹${plan.price.toLocaleString("en-IN")}`}
                     </Button>
@@ -126,18 +134,18 @@ const PaymentPage = () => {
             ) : (
               <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                 <CardContent className="text-center py-12 space-y-4">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 mx-auto flex items-center justify-center glow-aqua">
-                    <CheckCircle className="w-10 h-10 text-white" />
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent mx-auto flex items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.5)]">
+                    <CheckCircle className="w-10 h-10 text-primary-foreground" />
                   </div>
-                  <h2 className="font-aqua text-3xl text-gradient-aqua tracking-wider">ALL SET!</h2>
-                  <p className="text-cyan-100/80">
+                  <h2 className="font-display text-4xl text-gradient-sport tracking-wide">ALL SET!</h2>
+                  <p className="text-muted-foreground">
                     {method === "cash"
                       ? "Visit the academy to complete your payment."
                       : "Your payment is being processed. We'll be in touch shortly."}
                   </p>
                   <Button
                     onClick={() => navigate("/")}
-                    className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-white font-semibold uppercase tracking-wider text-sm mt-4"
+                    className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm mt-4"
                   >
                     Back to Home
                   </Button>
