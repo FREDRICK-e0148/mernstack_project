@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, ArrowRight, Waves } from "lucide-react";
-import AquaBackground from "@/components/AquaBackground";
+import { Check, ChevronRight, Trophy } from "lucide-react";
 import { PLANS, PLAN_CATEGORIES, Plan } from "@/lib/plans";
 
 const PlansPage = () => {
@@ -21,30 +20,43 @@ const PlansPage = () => {
   };
 
   return (
-    <div className="min-h-screen relative px-4 py-10 overflow-hidden">
-      <AquaBackground bubbles={22} />
-      <div className="relative z-10 max-w-5xl mx-auto">
+    <div className="min-h-screen relative px-4 py-12 overflow-hidden bg-sport-dark">
+      {/* Diagonal stripes background — match homepage */}
+      <div className="absolute inset-0 diagonal-stripe opacity-30" />
+      {/* Accent blobs */}
+      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px]" />
+      {/* Side color bar */}
+      <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-primary via-accent to-secondary" />
+
+      <div className="relative z-10 max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="text-center mb-10"
         >
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 flex items-center justify-center mx-auto mb-3 glow-aqua">
-            <Waves className="w-7 h-7 text-white" />
+          <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/30 rounded-full px-4 py-1.5 mb-5">
+            <Trophy className="w-4 h-4 text-secondary fill-secondary" />
+            <span className="text-sm font-semibold text-primary uppercase tracking-wider">Step 2 of 3 — Choose Plan</span>
           </div>
-          <h1 className="font-aqua text-4xl text-white tracking-wider">CHOOSE YOUR PLAN</h1>
-          <p className="text-cyan-100/70 text-sm mt-2">Pick the swimming plan that matches your goals.</p>
+          <h1 className="text-5xl md:text-6xl font-display text-sport-dark-foreground leading-[0.9] mb-3">
+            CHOOSE YOUR <span className="text-gradient-sport">PLAN</span>
+          </h1>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Pick the swimming plan that matches your goals — from beginner coaching to lifetime memberships.
+          </p>
         </motion.div>
 
-        <div className="flex flex-wrap gap-2 justify-center mb-6">
+        {/* Category tabs */}
+        <div className="flex flex-wrap gap-2 justify-center mb-8">
           {PLAN_CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCat(cat)}
-              className={`px-4 py-1.5 rounded-full text-xs uppercase tracking-wider font-semibold transition-all ${
+              className={`px-4 py-2 rounded-md text-xs uppercase tracking-wider font-semibold transition-all ${
                 activeCat === cat
-                  ? "bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-900"
-                  : "bg-slate-900/40 text-cyan-200 border border-cyan-400/30 hover:bg-cyan-500/20"
+                  ? "bg-sport-energy text-sport-energy-foreground"
+                  : "bg-sport-dark-foreground/5 text-sport-dark-foreground/70 border border-sport-dark-foreground/15 hover:border-primary/50 hover:text-sport-dark-foreground"
               }`}
             >
               {cat}
@@ -52,6 +64,7 @@ const PlansPage = () => {
           ))}
         </div>
 
+        {/* Plans grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((plan) => {
             const isSel = selected?.id === plan.id;
@@ -63,26 +76,28 @@ const PlansPage = () => {
                 className="cursor-pointer"
               >
                 <Card
-                  className={`relative overflow-hidden transition-all ${
+                  className={`relative overflow-hidden transition-all border-2 ${
                     isSel
-                      ? "bg-gradient-to-br from-cyan-500/30 to-teal-500/20 border-cyan-300 glow-aqua"
-                      : "bg-white/5 backdrop-blur-xl border-cyan-400/20 hover:border-cyan-400/50"
+                      ? "bg-primary/10 border-primary shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
+                      : "bg-sport-dark-foreground/5 border-sport-dark-foreground/10 hover:border-primary/40"
                   }`}
                 >
                   {plan.highlight && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-400 to-orange-400 text-slate-900 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-bl-lg">
+                    <div className="absolute top-0 right-0 bg-secondary text-secondary-foreground text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
                       Best Value
                     </div>
                   )}
+                  {/* Top accent line */}
+                  <div className={`absolute top-0 left-0 h-1 transition-all ${isSel ? "w-full bg-gradient-to-r from-primary via-accent to-secondary" : "w-0"}`} />
                   <CardContent className="p-5">
-                    <h3 className="font-aqua text-lg text-white tracking-wider leading-tight">{plan.name}</h3>
-                    <p className="text-cyan-300 text-[10px] uppercase tracking-[0.25em] mt-1">{plan.duration}</p>
-                    {plan.note && <p className="text-cyan-100/60 text-xs mt-2 italic">{plan.note}</p>}
+                    <p className="text-primary text-[10px] uppercase tracking-[0.25em] font-semibold">{plan.duration}</p>
+                    <h3 className="font-display text-2xl text-sport-dark-foreground tracking-wide leading-tight mt-1">{plan.name}</h3>
+                    {plan.note && <p className="text-muted-foreground text-xs mt-2 italic">{plan.note}</p>}
                     <div className="mt-4 flex items-baseline gap-1">
-                      <span className="font-aqua text-3xl text-gradient-aqua">₹{plan.price.toLocaleString("en-IN")}</span>
+                      <span className="font-display text-4xl text-gradient-sport">₹{plan.price.toLocaleString("en-IN")}</span>
                     </div>
                     {isSel && (
-                      <div className="mt-3 flex items-center gap-1 text-cyan-300 text-xs uppercase tracking-wider font-semibold">
+                      <div className="mt-3 flex items-center gap-1 text-primary text-xs uppercase tracking-wider font-semibold">
                         <Check className="w-4 h-4" /> Selected
                       </div>
                     )}
@@ -93,20 +108,22 @@ const PlansPage = () => {
           })}
         </div>
 
-        <div className="sticky bottom-4 mt-8">
-          <div className="bg-slate-900/80 backdrop-blur-xl border border-cyan-400/30 rounded-2xl p-4 flex items-center justify-between glow-aqua">
+        {/* Sticky confirm bar */}
+        <div className="sticky bottom-4 mt-10">
+          <div className="bg-sport-dark/90 backdrop-blur-xl border border-primary/30 rounded-xl p-4 flex items-center justify-between shadow-[0_10px_40px_-10px_hsl(var(--primary)/0.4)]">
             <div>
-              <p className="text-cyan-300 text-[10px] uppercase tracking-[0.3em]">Selected Plan</p>
-              <p className="text-white font-semibold">
+              <p className="text-primary text-[10px] uppercase tracking-[0.3em] font-semibold">Selected Plan</p>
+              <p className="text-sport-dark-foreground font-semibold">
                 {selected ? `${selected.name} · ${selected.duration} · ₹${selected.price.toLocaleString("en-IN")}` : "None yet — pick one above"}
               </p>
             </div>
             <Button
               onClick={proceed}
               disabled={!selected}
-              className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-white font-semibold uppercase tracking-wider text-xs group disabled:opacity-40"
+              size="lg"
+              className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-6 group disabled:opacity-40"
             >
-              Confirm & Pay <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              Confirm & Pay <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </div>
