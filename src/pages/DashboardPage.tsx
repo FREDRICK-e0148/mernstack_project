@@ -557,12 +557,20 @@ const DietStat = ({ icon: Icon, label, value, sub }: { icon: any; label: string;
   </div>
 );
 
-const Macro = ({ label, value, color }: { label: string; value: string; color: string }) => (
-  <div className={`rounded-lg p-3 border bg-${color}/10 border-${color}/30`}>
-    <p className={`text-[10px] uppercase tracking-[0.2em] text-${color} font-semibold`}>{label}</p>
-    <p className="font-display text-xl text-sport-dark-foreground tracking-wider">{value}</p>
-  </div>
-);
+const MACRO_STYLES: Record<string, { wrap: string; text: string }> = {
+  primary: { wrap: "bg-primary/10 border-primary/30", text: "text-primary" },
+  accent: { wrap: "bg-accent/10 border-accent/30", text: "text-accent" },
+  "sport-energy": { wrap: "bg-sport-energy/10 border-sport-energy/30", text: "text-sport-energy" },
+};
+const Macro = ({ label, value, color }: { label: string; value: string; color: string }) => {
+  const s = MACRO_STYLES[color] || MACRO_STYLES.primary;
+  return (
+    <div className={`rounded-lg p-3 border ${s.wrap}`}>
+      <p className={`text-[10px] uppercase tracking-[0.2em] font-semibold ${s.text}`}>{label}</p>
+      <p className="font-display text-xl text-sport-dark-foreground tracking-wider">{value}</p>
+    </div>
+  );
+};
 
 const ActionCard = ({
   icon: Icon, title, desc, cta, onClick, highlight,
