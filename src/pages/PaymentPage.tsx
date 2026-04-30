@@ -51,6 +51,13 @@ const PaymentPage = () => {
     await new Promise((r) => setTimeout(r, 1400));
     setProcessing(false);
     setDone(true);
+    try {
+      localStorage.setItem(
+        "paidPlan",
+        JSON.stringify({ plan, method, paidAt: new Date().toISOString() })
+      );
+      sessionStorage.removeItem("selectedPlan");
+    } catch {}
     toast({
       title: "Payment recorded!",
       description: method === "cash" ? "Pay at the academy on your first visit." : "We'll confirm your payment shortly.",
