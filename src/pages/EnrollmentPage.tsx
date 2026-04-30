@@ -417,10 +417,10 @@ const EnrollmentPage = () => {
                     Enrollment for {count} swimmer{count > 1 ? "s" : ""} submitted. We'll contact you shortly.
                   </p>
                   <Button
-                    onClick={() => navigate("/plans")}
+                    onClick={() => navigate("/dashboard")}
                     className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-white font-semibold uppercase tracking-wider text-sm mt-4"
                   >
-                    Choose Your Plan →
+                    Go to Dashboard →
                   </Button>
                 </CardContent>
               </motion.div>

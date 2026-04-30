@@ -9,6 +9,7 @@ import Index from "./pages/Index.tsx";
 
 const LoginPage = lazy(() => import("./pages/LoginPage.tsx"));
 const EnrollmentPage = lazy(() => import("./pages/EnrollmentPage.tsx"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage.tsx"));
 const PlansPage = lazy(() => import("./pages/PlansPage.tsx"));
 const PaymentPage = lazy(() => import("./pages/PaymentPage.tsx"));
 const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage.tsx"));
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/enroll" element={<EnrollmentPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/plans" element={<PlansPage />} />
               <Route path="/payment" element={<PaymentPage />} />
               <Route path="/admin-login" element={<AdminLoginPage />} />
