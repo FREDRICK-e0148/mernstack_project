@@ -56,14 +56,16 @@ const AdminDashboardPage = () => {
   const [userForm, setUserForm] = useState({ email: "", password: "" });
 
   const loadAll = async () => {
-    const [c, p, u] = await Promise.all([
+    const [c, p, u, pp] = await Promise.all([
       supabase.from("enrollment_candidates").select("*").order("created_at", { ascending: false }),
       supabase.from("programs").select("*").order("created_at", { ascending: false }),
       supabase.functions.invoke("admin-users", { body: { action: "list" } }),
+      supabase.from("paid_plans").select("*").order("paid_at", { ascending: false }),
     ]);
     setCandidates(c.data ?? []);
     setPrograms((p.data as Program[]) ?? []);
     setUsers(u.data?.users ?? []);
+    setPaidPlans(pp.data ?? []);
   };
 
   useEffect(() => {
