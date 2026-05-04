@@ -90,6 +90,8 @@ export type Database = {
       }
       paid_plans: {
         Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
           created_at: string
           duration_days: number
           expires_at: string
@@ -101,10 +103,13 @@ export type Database = {
           plan_id: string
           plan_name: string
           plan_price: number
+          status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           created_at?: string
           duration_days: number
           expires_at: string
@@ -116,10 +121,13 @@ export type Database = {
           plan_id: string
           plan_name: string
           plan_price: number
+          status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           created_at?: string
           duration_days?: number
           expires_at?: string
@@ -131,6 +139,7 @@ export type Database = {
           plan_id?: string
           plan_name?: string
           plan_price?: number
+          status?: string
           updated_at?: string
           user_id?: string
         }

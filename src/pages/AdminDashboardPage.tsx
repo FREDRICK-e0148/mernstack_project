@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell } from "lucide-react";
+import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell, CreditCard, Ban, Undo2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -37,6 +38,13 @@ const AdminDashboardPage = () => {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [users, setUsers] = useState<AuthUser[]>([]);
+  const [paidPlans, setPaidPlans] = useState<any[]>([]);
+
+  // refund/cancel dialog
+  const [planActionOpen, setPlanActionOpen] = useState(false);
+  const [planAction, setPlanAction] = useState<"cancelled" | "refunded">("cancelled");
+  const [planActionTarget, setPlanActionTarget] = useState<any>(null);
+  const [planActionReason, setPlanActionReason] = useState("");
 
   // program dialog state
   const [progOpen, setProgOpen] = useState(false);
@@ -48,14 +56,16 @@ const AdminDashboardPage = () => {
   const [userForm, setUserForm] = useState({ email: "", password: "" });
 
   const loadAll = async () => {
-    const [c, p, u] = await Promise.all([
+    const [c, p, u, pp] = await Promise.all([
       supabase.from("enrollment_candidates").select("*").order("created_at", { ascending: false }),
       supabase.from("programs").select("*").order("created_at", { ascending: false }),
       supabase.functions.invoke("admin-users", { body: { action: "list" } }),
+      supabase.from("paid_plans").select("*").order("paid_at", { ascending: false }),
     ]);
     setCandidates(c.data ?? []);
     setPrograms((p.data as Program[]) ?? []);
     setUsers(u.data?.users ?? []);
+    setPaidPlans(pp.data ?? []);
   };
 
   useEffect(() => {
@@ -144,6 +154,36 @@ const AdminDashboardPage = () => {
     loadAll();
   };
 
+  const openPlanAction = (plan: any, action: "cancelled" | "refunded") => {
+    setPlanActionTarget(plan);
+    setPlanAction(action);
+    setPlanActionReason("");
+    setPlanActionOpen(true);
+  };
+
+  const confirmPlanAction = async () => {
+    if (!planActionTarget) return;
+    const { error } = await supabase
+      .from("paid_plans")
+      .update({
+        status: planAction,
+        cancellation_reason: planActionReason || null,
+        cancelled_at: new Date().toISOString(),
+        // immediately void validity so user dashboard reflects the change
+        expires_at: new Date().toISOString(),
+      })
+      .eq("id", planActionTarget.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    toast({
+      title: planAction === "refunded" ? "Plan refunded" : "Plan cancelled",
+      description: "User dashboard will update immediately.",
+    });
+    setPlanActionOpen(false);
+    loadAll();
+  };
+
+  const userEmail = (uid: string) => users.find((u) => u.id === uid)?.email ?? uid.slice(0, 8);
+
   if (authLoading || checking) {
     return (
       <div className="min-h-screen bg-sport-dark flex items-center justify-center">
@@ -174,6 +214,7 @@ const AdminDashboardPage = () => {
           <TabsList className="bg-card/10 border border-primary/20 mb-6">
             <TabsTrigger value="enrollments"><Users className="w-4 h-4 mr-2" />Enrollments</TabsTrigger>
             <TabsTrigger value="programs"><Dumbbell className="w-4 h-4 mr-2" />Programs</TabsTrigger>
+            <TabsTrigger value="plans"><CreditCard className="w-4 h-4 mr-2" />Paid Plans</TabsTrigger>
             <TabsTrigger value="users"><UserPlus className="w-4 h-4 mr-2" />Users</TabsTrigger>
           </TabsList>
 
@@ -255,6 +296,78 @@ const AdminDashboardPage = () => {
             </Card>
           </TabsContent>
 
+          {/* PAID PLANS */}
+          <TabsContent value="plans">
+            <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
+                  PAID PLANS ({paidPlans.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {paidPlans.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No paid plans yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {paidPlans.map((p) => {
+                      const expired = new Date(p.expires_at).getTime() < Date.now();
+                      const status = p.status ?? "active";
+                      const badgeClass =
+                        status === "refunded"
+                          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40"
+                          : status === "cancelled"
+                          ? "bg-destructive/20 text-destructive border border-destructive/40"
+                          : expired
+                          ? "bg-muted/40 text-muted-foreground border border-muted/40"
+                          : "bg-primary/20 text-primary border border-primary/40";
+                      const label = status !== "active" ? status : expired ? "expired" : "active";
+                      return (
+                        <div key={p.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-3">
+                          <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+                            <div><span className="text-muted-foreground text-xs uppercase">User</span><p className="text-sport-dark-foreground truncate">{userEmail(p.user_id)}</p></div>
+                            <div><span className="text-muted-foreground text-xs uppercase">Plan</span><p className="text-sport-dark-foreground font-semibold">{p.plan_name}</p></div>
+                            <div><span className="text-muted-foreground text-xs uppercase">Price</span><p className="text-primary">₹{Number(p.plan_price).toLocaleString()}</p></div>
+                            <div><span className="text-muted-foreground text-xs uppercase">Paid</span><p className="text-sport-dark-foreground">{new Date(p.paid_at).toLocaleDateString()}</p></div>
+                            <div>
+                              <span className="text-muted-foreground text-xs uppercase">Status</span>
+                              <div><Badge className={`${badgeClass} uppercase text-[10px] mt-1`}>{label}</Badge></div>
+                            </div>
+                            {p.cancellation_reason && (
+                              <div className="col-span-2 md:col-span-5">
+                                <span className="text-muted-foreground text-xs uppercase">Reason</span>
+                                <p className="text-sport-dark-foreground text-xs">{p.cancellation_reason}</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={status !== "active"}
+                              onClick={() => openPlanAction(p, "cancelled")}
+                              className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                            >
+                              <Ban className="w-3 h-3 mr-1" /> Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={status !== "active"}
+                              onClick={() => openPlanAction(p, "refunded")}
+                              className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10"
+                            >
+                              <Undo2 className="w-3 h-3 mr-1" /> Refund
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* USERS */}
           <TabsContent value="users">
             <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
@@ -323,6 +436,45 @@ const AdminDashboardPage = () => {
           <DialogFooter>
             <Button onClick={createUser} disabled={!userForm.email || userForm.password.length < 6} className="bg-sport-energy text-sport-energy-foreground hover:bg-sport-energy/90">
               Create User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel/Refund dialog */}
+      <Dialog open={planActionOpen} onOpenChange={setPlanActionOpen}>
+        <DialogContent className="bg-sport-dark border-primary/30">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
+              {planAction === "refunded" ? "REFUND PLAN" : "CANCEL PLAN"}
+            </DialogTitle>
+          </DialogHeader>
+          {planActionTarget && (
+            <div className="space-y-3 text-sm">
+              <div className="bg-card/10 border border-primary/20 rounded p-3">
+                <p className="text-sport-dark-foreground"><span className="text-muted-foreground">User:</span> {userEmail(planActionTarget.user_id)}</p>
+                <p className="text-sport-dark-foreground"><span className="text-muted-foreground">Plan:</span> {planActionTarget.plan_name}</p>
+                <p className="text-sport-dark-foreground"><span className="text-muted-foreground">Amount:</span> ₹{Number(planActionTarget.plan_price).toLocaleString()}</p>
+              </div>
+              <p className="text-muted-foreground text-xs">
+                The plan will be marked as <strong>{planAction}</strong> and validity will end immediately. The user's dashboard will reflect this change in real time.
+              </p>
+              <Textarea
+                placeholder="Reason (optional)"
+                value={planActionReason}
+                onChange={(e) => setPlanActionReason(e.target.value)}
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPlanActionOpen(false)} className="border-primary/40 text-primary">Back</Button>
+            <Button
+              onClick={confirmPlanAction}
+              className={planAction === "refunded"
+                ? "bg-yellow-500 hover:bg-yellow-500/90 text-sport-dark"
+                : "bg-destructive hover:bg-destructive/90 text-destructive-foreground"}
+            >
+              Confirm {planAction === "refunded" ? "Refund" : "Cancellation"}
             </Button>
           </DialogFooter>
         </DialogContent>

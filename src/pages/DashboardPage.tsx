@@ -38,6 +38,8 @@ interface PaidPlan {
   paidAt: string;
   durationDays?: number;
   expiresAt?: string;
+  status?: "active" | "cancelled" | "refunded";
+  cancellationReason?: string | null;
 }
 
 const ageFromDob = (dob: string) => {
@@ -105,6 +107,8 @@ const DashboardPage = () => {
           paidAt: row.paid_at,
           durationDays: row.duration_days,
           expiresAt: row.expires_at,
+          status: row.status ?? "active",
+          cancellationReason: row.cancellation_reason ?? null,
         };
         setPaidPlan(synced);
         try { localStorage.setItem("paidPlan", JSON.stringify(synced)); } catch {}
@@ -114,6 +118,43 @@ const DashboardPage = () => {
       }
       setLoading(false);
     })();
+
+    // Realtime: react instantly when admin cancels/refunds the plan
+    const channel = supabase
+      .channel(`paid_plans_user_${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "paid_plans", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const row: any = payload.new ?? payload.old;
+          if (!row) return;
+          if (payload.eventType === "DELETE") {
+            setPaidPlan(null);
+            try { localStorage.removeItem("paidPlan"); } catch {}
+            return;
+          }
+          const synced: PaidPlan = {
+            plan: {
+              id: row.plan_id,
+              name: row.plan_name,
+              category: row.plan_category,
+              duration: row.plan_duration,
+              price: Number(row.plan_price),
+            },
+            method: row.payment_method,
+            paidAt: row.paid_at,
+            durationDays: row.duration_days,
+            expiresAt: row.expires_at,
+            status: row.status ?? "active",
+            cancellationReason: row.cancellation_reason ?? null,
+          };
+          setPaidPlan(synced);
+          try { localStorage.setItem("paidPlan", JSON.stringify(synced)); } catch {}
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const allSwimmers = useMemo(
@@ -140,16 +181,17 @@ const DashboardPage = () => {
     const start = new Date(paidPlan.paidAt);
     const days = paidPlan.durationDays ?? planDurationDays(paidPlan.plan.duration);
     const end = paidPlan.expiresAt ? new Date(paidPlan.expiresAt) : new Date(start.getTime() + days * 86400000);
-    const totalMs = end.getTime() - start.getTime();
-    const remainingMs = Math.max(0, end.getTime() - now);
+    const totalMs = Math.max(1, end.getTime() - start.getTime());
+    const isCancelled = paidPlan.status === "cancelled" || paidPlan.status === "refunded";
+    const remainingMs = isCancelled ? 0 : Math.max(0, end.getTime() - now);
     const elapsedMs = Math.min(totalMs, Math.max(0, now - start.getTime()));
     const remainingDays = Math.floor(remainingMs / 86400000);
     const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
     const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
     const remainingSeconds = Math.floor((remainingMs % 60000) / 1000);
-    const progressPct = totalMs > 0 ? Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100)) : 0;
+    const progressPct = isCancelled ? 100 : Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
     const expired = remainingMs <= 0;
-    return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired };
+    return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired, isCancelled, status: paidPlan.status ?? "active" };
   }, [paidPlan, now]);
 
   const totalSwimmers = allSwimmers.length;
@@ -259,7 +301,12 @@ const DashboardPage = () => {
           <StatCard
             icon={ShieldCheck}
             label="Status"
-            value={paidPlan ? (validity && !validity.expired ? "Active" : "Expired") : "Pending"}
+            value={
+              !paidPlan ? "Pending" :
+              validity?.status === "refunded" ? "Refunded" :
+              validity?.status === "cancelled" ? "Cancelled" :
+              validity && !validity.expired ? "Active" : "Expired"
+            }
           />
         </div>
 
@@ -280,8 +327,20 @@ const DashboardPage = () => {
                   )}
                 </div>
                 {paidPlan && validity && (
-                  <Badge className={!validity.expired ? "bg-primary/20 text-primary border border-primary/40 font-mono" : "bg-destructive/20 text-destructive border border-destructive/40"}>
-                    {!validity.expired
+                  <Badge className={
+                    validity.status === "refunded"
+                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40"
+                      : validity.status === "cancelled"
+                      ? "bg-destructive/20 text-destructive border border-destructive/40"
+                      : !validity.expired
+                      ? "bg-primary/20 text-primary border border-primary/40 font-mono"
+                      : "bg-destructive/20 text-destructive border border-destructive/40"
+                  }>
+                    {validity.status === "refunded"
+                      ? "Refunded"
+                      : validity.status === "cancelled"
+                      ? "Cancelled"
+                      : !validity.expired
                       ? `${validity.remainingDays}d ${String(validity.remainingHours).padStart(2,"0")}h ${String(validity.remainingMinutes).padStart(2,"0")}m ${String(validity.remainingSeconds).padStart(2,"0")}s left`
                       : "Expired"}
                   </Badge>
@@ -305,6 +364,16 @@ const DashboardPage = () => {
                       value={validity.expired ? "0 days" : `${validity.remainingDays} days`}
                     />
                   </div>
+                  {validity.isCancelled && (
+                    <div className="mt-4 p-3 rounded border border-destructive/30 bg-destructive/10 text-xs">
+                      <p className="text-destructive font-semibold uppercase tracking-wider mb-1">
+                        Plan {validity.status === "refunded" ? "Refunded" : "Cancelled"} by Admin
+                      </p>
+                      {paidPlan?.cancellationReason && (
+                        <p className="text-muted-foreground">Reason: {paidPlan.cancellationReason}</p>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-center py-6">
