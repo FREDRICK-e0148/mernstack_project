@@ -134,18 +134,23 @@ const DashboardPage = () => {
     return `FSA-${hex}`;
   }, [user?.id]);
 
-  // Plan validity — prefer backend-synced expiresAt/durationDays for cross-device accuracy
+  // Plan validity — recomputed every second via `now` for live countdown
   const validity = useMemo(() => {
     if (!paidPlan) return null;
     const start = new Date(paidPlan.paidAt);
     const days = paidPlan.durationDays ?? planDurationDays(paidPlan.plan.duration);
     const end = paidPlan.expiresAt ? new Date(paidPlan.expiresAt) : new Date(start.getTime() + days * 86400000);
     const totalMs = end.getTime() - start.getTime();
-    const elapsedMs = Math.min(totalMs, Date.now() - start.getTime());
-    const remainingDays = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
+    const remainingMs = Math.max(0, end.getTime() - now);
+    const elapsedMs = Math.min(totalMs, Math.max(0, now - start.getTime()));
+    const remainingDays = Math.floor(remainingMs / 86400000);
+    const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
+    const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
+    const remainingSeconds = Math.floor((remainingMs % 60000) / 1000);
     const progressPct = totalMs > 0 ? Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100)) : 0;
-    return { start, end, days, remainingDays, progressPct };
-  }, [paidPlan]);
+    const expired = remainingMs <= 0;
+    return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired };
+  }, [paidPlan, now]);
 
   const totalSwimmers = allSwimmers.length;
   const latest = enrollments[0];
