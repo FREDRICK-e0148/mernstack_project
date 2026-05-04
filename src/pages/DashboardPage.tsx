@@ -107,6 +107,8 @@ const DashboardPage = () => {
           paidAt: row.paid_at,
           durationDays: row.duration_days,
           expiresAt: row.expires_at,
+          status: row.status ?? "active",
+          cancellationReason: row.cancellation_reason ?? null,
         };
         setPaidPlan(synced);
         try { localStorage.setItem("paidPlan", JSON.stringify(synced)); } catch {}
