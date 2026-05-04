@@ -214,6 +214,7 @@ const AdminDashboardPage = () => {
           <TabsList className="bg-card/10 border border-primary/20 mb-6">
             <TabsTrigger value="enrollments"><Users className="w-4 h-4 mr-2" />Enrollments</TabsTrigger>
             <TabsTrigger value="programs"><Dumbbell className="w-4 h-4 mr-2" />Programs</TabsTrigger>
+            <TabsTrigger value="plans"><CreditCard className="w-4 h-4 mr-2" />Paid Plans</TabsTrigger>
             <TabsTrigger value="users"><UserPlus className="w-4 h-4 mr-2" />Users</TabsTrigger>
           </TabsList>
 
