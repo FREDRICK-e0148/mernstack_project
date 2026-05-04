@@ -36,6 +36,8 @@ interface PaidPlan {
   plan: { id: string; name: string; category: string; duration: string; price: number };
   method: string;
   paidAt: string;
+  durationDays?: number;
+  expiresAt?: string;
 }
 
 const ageFromDob = (dob: string) => {
