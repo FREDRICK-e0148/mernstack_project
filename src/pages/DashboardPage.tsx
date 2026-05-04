@@ -327,8 +327,20 @@ const DashboardPage = () => {
                   )}
                 </div>
                 {paidPlan && validity && (
-                  <Badge className={!validity.expired ? "bg-primary/20 text-primary border border-primary/40 font-mono" : "bg-destructive/20 text-destructive border border-destructive/40"}>
-                    {!validity.expired
+                  <Badge className={
+                    validity.status === "refunded"
+                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40"
+                      : validity.status === "cancelled"
+                      ? "bg-destructive/20 text-destructive border border-destructive/40"
+                      : !validity.expired
+                      ? "bg-primary/20 text-primary border border-primary/40 font-mono"
+                      : "bg-destructive/20 text-destructive border border-destructive/40"
+                  }>
+                    {validity.status === "refunded"
+                      ? "Refunded"
+                      : validity.status === "cancelled"
+                      ? "Cancelled"
+                      : !validity.expired
                       ? `${validity.remainingDays}d ${String(validity.remainingHours).padStart(2,"0")}h ${String(validity.remainingMinutes).padStart(2,"0")}m ${String(validity.remainingSeconds).padStart(2,"0")}s left`
                       : "Expired"}
                   </Badge>
