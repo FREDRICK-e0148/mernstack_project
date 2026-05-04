@@ -51,15 +51,35 @@ const PaymentPage = () => {
     if (!method || !plan) return;
     setProcessing(true);
     await new Promise((r) => setTimeout(r, 1400));
-    setProcessing(false);
-    setDone(true);
+    const paidAt = new Date();
+    const durationDays = planDurationDays(plan.duration);
+    const expiresAt = new Date(paidAt.getTime() + durationDays * 86400000);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("paid_plans").insert({
+          user_id: user.id,
+          plan_id: plan.id,
+          plan_name: plan.name,
+          plan_category: plan.category,
+          plan_duration: plan.duration,
+          plan_price: plan.price,
+          payment_method: method,
+          paid_at: paidAt.toISOString(),
+          duration_days: durationDays,
+          expires_at: expiresAt.toISOString(),
+        });
+      }
       localStorage.setItem(
         "paidPlan",
-        JSON.stringify({ plan, method, paidAt: new Date().toISOString() })
+        JSON.stringify({ plan, method, paidAt: paidAt.toISOString(), durationDays, expiresAt: expiresAt.toISOString() })
       );
       sessionStorage.removeItem("selectedPlan");
-    } catch {}
+    } catch (e) {
+      console.error("Failed to persist paid plan", e);
+    }
+    setProcessing(false);
+    setDone(true);
     toast({
       title: "Payment recorded!",
       description: method === "cash" ? "Pay at the academy on your first visit." : "We'll confirm your payment shortly.",
