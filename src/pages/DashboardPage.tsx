@@ -364,6 +364,16 @@ const DashboardPage = () => {
                       value={validity.expired ? "0 days" : `${validity.remainingDays} days`}
                     />
                   </div>
+                  {validity.isCancelled && (
+                    <div className="mt-4 p-3 rounded border border-destructive/30 bg-destructive/10 text-xs">
+                      <p className="text-destructive font-semibold uppercase tracking-wider mb-1">
+                        Plan {validity.status === "refunded" ? "Refunded" : "Cancelled"} by Admin
+                      </p>
+                      {paidPlan?.cancellationReason && (
+                        <p className="text-muted-foreground">Reason: {paidPlan.cancellationReason}</p>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-center py-6">
