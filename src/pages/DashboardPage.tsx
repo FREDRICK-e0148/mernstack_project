@@ -280,8 +280,10 @@ const DashboardPage = () => {
                   )}
                 </div>
                 {paidPlan && validity && (
-                  <Badge className={validity.remainingDays > 0 ? "bg-primary/20 text-primary border border-primary/40" : "bg-destructive/20 text-destructive border border-destructive/40"}>
-                    {validity.remainingDays > 0 ? `${validity.remainingDays} days left` : "Expired"}
+                  <Badge className={!validity.expired ? "bg-primary/20 text-primary border border-primary/40 font-mono" : "bg-destructive/20 text-destructive border border-destructive/40"}>
+                    {!validity.expired
+                      ? `${validity.remainingDays}d ${String(validity.remainingHours).padStart(2,"0")}h ${String(validity.remainingMinutes).padStart(2,"0")}m ${String(validity.remainingSeconds).padStart(2,"0")}s left`
+                      : "Expired"}
                   </Badge>
                 )}
               </div>
@@ -290,9 +292,18 @@ const DashboardPage = () => {
                 <>
                   <Progress value={validity.progressPct} className="h-2 mb-3" />
                   <div className="grid grid-cols-3 gap-3 text-center">
-                    <Mini label="Start" value={validity.start.toLocaleDateString()} />
-                    <Mini label="Expires" value={validity.end.toLocaleDateString()} />
-                    <Mini label="Total Days" value={String(validity.days)} />
+                    <Mini
+                      label="Start Date"
+                      value={validity.start.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                    />
+                    <Mini
+                      label="Expiration Date"
+                      value={validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                    />
+                    <Mini
+                      label="Remaining"
+                      value={validity.expired ? "0 days" : `${validity.remainingDays} days`}
+                    />
                   </div>
                 </>
               ) : (
