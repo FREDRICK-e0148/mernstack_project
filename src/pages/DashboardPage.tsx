@@ -65,16 +65,46 @@ const DashboardPage = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data, error } = await supabase
-        .from("enrollments")
-        .select("id, created_at, enrollment_candidates(id, name, dob, contact_no, email, photo_url, height, weight)")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      if (!error && data) setEnrollments(data as any);
+      const [enrollRes, paidRes] = await Promise.all([
+        supabase
+          .from("enrollments")
+          .select("id, created_at, enrollment_candidates(id, name, dob, contact_no, email, photo_url, height, weight)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("paid_plans")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("paid_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      if (!enrollRes.error && enrollRes.data) setEnrollments(enrollRes.data as any);
+
       const sp = sessionStorage.getItem("selectedPlan");
       if (sp) { try { setSelectedPlan(JSON.parse(sp)); } catch {} }
-      const pp = localStorage.getItem("paidPlan");
-      if (pp) { try { setPaidPlan(JSON.parse(pp)); } catch {} }
+
+      if (!paidRes.error && paidRes.data) {
+        const row: any = paidRes.data;
+        const synced: PaidPlan = {
+          plan: {
+            id: row.plan_id,
+            name: row.plan_name,
+            category: row.plan_category,
+            duration: row.plan_duration,
+            price: Number(row.plan_price),
+          },
+          method: row.payment_method,
+          paidAt: row.paid_at,
+          durationDays: row.duration_days,
+          expiresAt: row.expires_at,
+        };
+        setPaidPlan(synced);
+        try { localStorage.setItem("paidPlan", JSON.stringify(synced)); } catch {}
+      } else {
+        const pp = localStorage.getItem("paidPlan");
+        if (pp) { try { setPaidPlan(JSON.parse(pp)); } catch {} }
+      }
       setLoading(false);
     })();
   }, [user]);
