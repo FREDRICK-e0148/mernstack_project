@@ -440,6 +440,45 @@ const AdminDashboardPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel/Refund dialog */}
+      <Dialog open={planActionOpen} onOpenChange={setPlanActionOpen}>
+        <DialogContent className="bg-sport-dark border-primary/30">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
+              {planAction === "refunded" ? "REFUND PLAN" : "CANCEL PLAN"}
+            </DialogTitle>
+          </DialogHeader>
+          {planActionTarget && (
+            <div className="space-y-3 text-sm">
+              <div className="bg-card/10 border border-primary/20 rounded p-3">
+                <p className="text-sport-dark-foreground"><span className="text-muted-foreground">User:</span> {userEmail(planActionTarget.user_id)}</p>
+                <p className="text-sport-dark-foreground"><span className="text-muted-foreground">Plan:</span> {planActionTarget.plan_name}</p>
+                <p className="text-sport-dark-foreground"><span className="text-muted-foreground">Amount:</span> ₹{Number(planActionTarget.plan_price).toLocaleString()}</p>
+              </div>
+              <p className="text-muted-foreground text-xs">
+                The plan will be marked as <strong>{planAction}</strong> and validity will end immediately. The user's dashboard will reflect this change in real time.
+              </p>
+              <Textarea
+                placeholder="Reason (optional)"
+                value={planActionReason}
+                onChange={(e) => setPlanActionReason(e.target.value)}
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPlanActionOpen(false)} className="border-primary/40 text-primary">Back</Button>
+            <Button
+              onClick={confirmPlanAction}
+              className={planAction === "refunded"
+                ? "bg-yellow-500 hover:bg-yellow-500/90 text-sport-dark"
+                : "bg-destructive hover:bg-destructive/90 text-destructive-foreground"}
+            >
+              Confirm {planAction === "refunded" ? "Refund" : "Cancellation"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
