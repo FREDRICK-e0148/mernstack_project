@@ -38,6 +38,8 @@ interface PaidPlan {
   paidAt: string;
   durationDays?: number;
   expiresAt?: string;
+  status?: "active" | "cancelled" | "refunded";
+  cancellationReason?: string | null;
 }
 
 const ageFromDob = (dob: string) => {
