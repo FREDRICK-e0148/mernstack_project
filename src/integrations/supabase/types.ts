@@ -88,6 +88,54 @@ export type Database = {
         }
         Relationships: []
       }
+      paid_plans: {
+        Row: {
+          created_at: string
+          duration_days: number
+          expires_at: string
+          id: string
+          paid_at: string
+          payment_method: string
+          plan_category: string
+          plan_duration: string
+          plan_id: string
+          plan_name: string
+          plan_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_days: number
+          expires_at: string
+          id?: string
+          paid_at?: string
+          payment_method: string
+          plan_category: string
+          plan_duration: string
+          plan_id: string
+          plan_name: string
+          plan_price: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_days?: number
+          expires_at?: string
+          id?: string
+          paid_at?: string
+          payment_method?: string
+          plan_category?: string
+          plan_duration?: string
+          plan_id?: string
+          plan_name?: string
+          plan_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
