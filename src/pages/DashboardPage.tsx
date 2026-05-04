@@ -118,6 +118,43 @@ const DashboardPage = () => {
       }
       setLoading(false);
     })();
+
+    // Realtime: react instantly when admin cancels/refunds the plan
+    const channel = supabase
+      .channel(`paid_plans_user_${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "paid_plans", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const row: any = payload.new ?? payload.old;
+          if (!row) return;
+          if (payload.eventType === "DELETE") {
+            setPaidPlan(null);
+            try { localStorage.removeItem("paidPlan"); } catch {}
+            return;
+          }
+          const synced: PaidPlan = {
+            plan: {
+              id: row.plan_id,
+              name: row.plan_name,
+              category: row.plan_category,
+              duration: row.plan_duration,
+              price: Number(row.plan_price),
+            },
+            method: row.payment_method,
+            paidAt: row.paid_at,
+            durationDays: row.duration_days,
+            expiresAt: row.expires_at,
+            status: row.status ?? "active",
+            cancellationReason: row.cancellation_reason ?? null,
+          };
+          setPaidPlan(synced);
+          try { localStorage.setItem("paidPlan", JSON.stringify(synced)); } catch {}
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const allSwimmers = useMemo(
