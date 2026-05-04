@@ -154,6 +154,36 @@ const AdminDashboardPage = () => {
     loadAll();
   };
 
+  const openPlanAction = (plan: any, action: "cancelled" | "refunded") => {
+    setPlanActionTarget(plan);
+    setPlanAction(action);
+    setPlanActionReason("");
+    setPlanActionOpen(true);
+  };
+
+  const confirmPlanAction = async () => {
+    if (!planActionTarget) return;
+    const { error } = await supabase
+      .from("paid_plans")
+      .update({
+        status: planAction,
+        cancellation_reason: planActionReason || null,
+        cancelled_at: new Date().toISOString(),
+        // immediately void validity so user dashboard reflects the change
+        expires_at: new Date().toISOString(),
+      })
+      .eq("id", planActionTarget.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    toast({
+      title: planAction === "refunded" ? "Plan refunded" : "Plan cancelled",
+      description: "User dashboard will update immediately.",
+    });
+    setPlanActionOpen(false);
+    loadAll();
+  };
+
+  const userEmail = (uid: string) => users.find((u) => u.id === uid)?.email ?? uid.slice(0, 8);
+
   if (authLoading || checking) {
     return (
       <div className="min-h-screen bg-sport-dark flex items-center justify-center">
