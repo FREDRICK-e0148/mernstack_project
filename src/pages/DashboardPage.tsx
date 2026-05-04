@@ -181,16 +181,17 @@ const DashboardPage = () => {
     const start = new Date(paidPlan.paidAt);
     const days = paidPlan.durationDays ?? planDurationDays(paidPlan.plan.duration);
     const end = paidPlan.expiresAt ? new Date(paidPlan.expiresAt) : new Date(start.getTime() + days * 86400000);
-    const totalMs = end.getTime() - start.getTime();
-    const remainingMs = Math.max(0, end.getTime() - now);
+    const totalMs = Math.max(1, end.getTime() - start.getTime());
+    const isCancelled = paidPlan.status === "cancelled" || paidPlan.status === "refunded";
+    const remainingMs = isCancelled ? 0 : Math.max(0, end.getTime() - now);
     const elapsedMs = Math.min(totalMs, Math.max(0, now - start.getTime()));
     const remainingDays = Math.floor(remainingMs / 86400000);
     const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
     const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
     const remainingSeconds = Math.floor((remainingMs % 60000) / 1000);
-    const progressPct = totalMs > 0 ? Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100)) : 0;
+    const progressPct = isCancelled ? 100 : Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
     const expired = remainingMs <= 0;
-    return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired };
+    return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired, isCancelled, status: paidPlan.status ?? "active" };
   }, [paidPlan, now]);
 
   const totalSwimmers = allSwimmers.length;
