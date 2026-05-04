@@ -57,10 +57,17 @@ const DashboardPage = () => {
     () => (localStorage.getItem("dietType") as DietType | null) || null
   );
   const [activeSwimmerId, setActiveSwimmerId] = useState<string | null>(null);
+  const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
+
+  // Live tick every second so remaining time updates in real-time
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
