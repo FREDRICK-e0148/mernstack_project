@@ -57,10 +57,17 @@ const DashboardPage = () => {
     () => (localStorage.getItem("dietType") as DietType | null) || null
   );
   const [activeSwimmerId, setActiveSwimmerId] = useState<string | null>(null);
+  const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
+
+  // Live tick every second so remaining time updates in real-time
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -127,18 +134,23 @@ const DashboardPage = () => {
     return `FSA-${hex}`;
   }, [user?.id]);
 
-  // Plan validity — prefer backend-synced expiresAt/durationDays for cross-device accuracy
+  // Plan validity — recomputed every second via `now` for live countdown
   const validity = useMemo(() => {
     if (!paidPlan) return null;
     const start = new Date(paidPlan.paidAt);
     const days = paidPlan.durationDays ?? planDurationDays(paidPlan.plan.duration);
     const end = paidPlan.expiresAt ? new Date(paidPlan.expiresAt) : new Date(start.getTime() + days * 86400000);
     const totalMs = end.getTime() - start.getTime();
-    const elapsedMs = Math.min(totalMs, Date.now() - start.getTime());
-    const remainingDays = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
+    const remainingMs = Math.max(0, end.getTime() - now);
+    const elapsedMs = Math.min(totalMs, Math.max(0, now - start.getTime()));
+    const remainingDays = Math.floor(remainingMs / 86400000);
+    const remainingHours = Math.floor((remainingMs % 86400000) / 3600000);
+    const remainingMinutes = Math.floor((remainingMs % 3600000) / 60000);
+    const remainingSeconds = Math.floor((remainingMs % 60000) / 1000);
     const progressPct = totalMs > 0 ? Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100)) : 0;
-    return { start, end, days, remainingDays, progressPct };
-  }, [paidPlan]);
+    const expired = remainingMs <= 0;
+    return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired };
+  }, [paidPlan, now]);
 
   const totalSwimmers = allSwimmers.length;
   const latest = enrollments[0];
@@ -247,7 +259,7 @@ const DashboardPage = () => {
           <StatCard
             icon={ShieldCheck}
             label="Status"
-            value={paidPlan ? (validity && validity.remainingDays > 0 ? "Active" : "Expired") : "Pending"}
+            value={paidPlan ? (validity && !validity.expired ? "Active" : "Expired") : "Pending"}
           />
         </div>
 
@@ -268,8 +280,10 @@ const DashboardPage = () => {
                   )}
                 </div>
                 {paidPlan && validity && (
-                  <Badge className={validity.remainingDays > 0 ? "bg-primary/20 text-primary border border-primary/40" : "bg-destructive/20 text-destructive border border-destructive/40"}>
-                    {validity.remainingDays > 0 ? `${validity.remainingDays} days left` : "Expired"}
+                  <Badge className={!validity.expired ? "bg-primary/20 text-primary border border-primary/40 font-mono" : "bg-destructive/20 text-destructive border border-destructive/40"}>
+                    {!validity.expired
+                      ? `${validity.remainingDays}d ${String(validity.remainingHours).padStart(2,"0")}h ${String(validity.remainingMinutes).padStart(2,"0")}m ${String(validity.remainingSeconds).padStart(2,"0")}s left`
+                      : "Expired"}
                   </Badge>
                 )}
               </div>
@@ -278,9 +292,18 @@ const DashboardPage = () => {
                 <>
                   <Progress value={validity.progressPct} className="h-2 mb-3" />
                   <div className="grid grid-cols-3 gap-3 text-center">
-                    <Mini label="Start" value={validity.start.toLocaleDateString()} />
-                    <Mini label="Expires" value={validity.end.toLocaleDateString()} />
-                    <Mini label="Total Days" value={String(validity.days)} />
+                    <Mini
+                      label="Start Date"
+                      value={validity.start.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                    />
+                    <Mini
+                      label="Expiration Date"
+                      value={validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                    />
+                    <Mini
+                      label="Remaining"
+                      value={validity.expired ? "0 days" : `${validity.remainingDays} days`}
+                    />
                   </div>
                 </>
               ) : (
