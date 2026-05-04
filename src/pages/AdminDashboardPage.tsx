@@ -296,6 +296,78 @@ const AdminDashboardPage = () => {
             </Card>
           </TabsContent>
 
+          {/* PAID PLANS */}
+          <TabsContent value="plans">
+            <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
+              <CardHeader>
+                <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
+                  PAID PLANS ({paidPlans.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {paidPlans.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No paid plans yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {paidPlans.map((p) => {
+                      const expired = new Date(p.expires_at).getTime() < Date.now();
+                      const status = p.status ?? "active";
+                      const badgeClass =
+                        status === "refunded"
+                          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40"
+                          : status === "cancelled"
+                          ? "bg-destructive/20 text-destructive border border-destructive/40"
+                          : expired
+                          ? "bg-muted/40 text-muted-foreground border border-muted/40"
+                          : "bg-primary/20 text-primary border border-primary/40";
+                      const label = status !== "active" ? status : expired ? "expired" : "active";
+                      return (
+                        <div key={p.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-3">
+                          <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+                            <div><span className="text-muted-foreground text-xs uppercase">User</span><p className="text-sport-dark-foreground truncate">{userEmail(p.user_id)}</p></div>
+                            <div><span className="text-muted-foreground text-xs uppercase">Plan</span><p className="text-sport-dark-foreground font-semibold">{p.plan_name}</p></div>
+                            <div><span className="text-muted-foreground text-xs uppercase">Price</span><p className="text-primary">₹{Number(p.plan_price).toLocaleString()}</p></div>
+                            <div><span className="text-muted-foreground text-xs uppercase">Paid</span><p className="text-sport-dark-foreground">{new Date(p.paid_at).toLocaleDateString()}</p></div>
+                            <div>
+                              <span className="text-muted-foreground text-xs uppercase">Status</span>
+                              <div><Badge className={`${badgeClass} uppercase text-[10px] mt-1`}>{label}</Badge></div>
+                            </div>
+                            {p.cancellation_reason && (
+                              <div className="col-span-2 md:col-span-5">
+                                <span className="text-muted-foreground text-xs uppercase">Reason</span>
+                                <p className="text-sport-dark-foreground text-xs">{p.cancellation_reason}</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={status !== "active"}
+                              onClick={() => openPlanAction(p, "cancelled")}
+                              className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                            >
+                              <Ban className="w-3 h-3 mr-1" /> Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={status !== "active"}
+                              onClick={() => openPlanAction(p, "refunded")}
+                              className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10"
+                            >
+                              <Undo2 className="w-3 h-3 mr-1" /> Refund
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* USERS */}
           <TabsContent value="users">
             <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
