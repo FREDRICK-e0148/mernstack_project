@@ -301,7 +301,12 @@ const DashboardPage = () => {
           <StatCard
             icon={ShieldCheck}
             label="Status"
-            value={paidPlan ? (validity && !validity.expired ? "Active" : "Expired") : "Pending"}
+            value={
+              !paidPlan ? "Pending" :
+              validity?.status === "refunded" ? "Refunded" :
+              validity?.status === "cancelled" ? "Cancelled" :
+              validity && !validity.expired ? "Active" : "Expired"
+            }
           />
         </div>
 
