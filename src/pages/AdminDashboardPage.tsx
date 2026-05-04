@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell } from "lucide-react";
+import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell, CreditCard, Ban, Undo2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
