@@ -18,7 +18,9 @@ import {
   BadgePercent,
 } from "lucide-react";
 import { Plan } from "@/lib/plans";
+import { planDurationDays } from "@/lib/diet";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type Method = "card" | "cash" | "gpay";
 
