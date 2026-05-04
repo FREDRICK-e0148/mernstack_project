@@ -127,12 +127,12 @@ const DashboardPage = () => {
     return `FSA-${hex}`;
   }, [user?.id]);
 
-  // Plan validity
+  // Plan validity — prefer backend-synced expiresAt/durationDays for cross-device accuracy
   const validity = useMemo(() => {
     if (!paidPlan) return null;
     const start = new Date(paidPlan.paidAt);
-    const days = planDurationDays(paidPlan.plan.duration);
-    const end = new Date(start.getTime() + days * 86400000);
+    const days = paidPlan.durationDays ?? planDurationDays(paidPlan.plan.duration);
+    const end = paidPlan.expiresAt ? new Date(paidPlan.expiresAt) : new Date(start.getTime() + days * 86400000);
     const totalMs = end.getTime() - start.getTime();
     const elapsedMs = Math.min(totalMs, Date.now() - start.getTime());
     const remainingDays = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
