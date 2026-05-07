@@ -221,11 +221,11 @@ const DashboardPage = () => {
   // (cancel/refund/extend) invalidates prior reminders and avoids stale fires.
   const notifiedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
+    if (!reminderPrefs.enabled) return;
     if (!paidPlan || !validity || validity.isCancelled) return;
     const planKey = paidPlan.id ?? paidPlan.plan.id;
     const version = paidPlan.updatedAt ?? paidPlan.paidAt;
     const key = `expiryNotified:${planKey}:${version}`;
-    // Cleanup older reminder entries for any prior version of this plan
     try {
       const prefix = `expiryNotified:${planKey}:`;
       for (let i = localStorage.length - 1; i >= 0; i--) {
@@ -244,23 +244,23 @@ const DashboardPage = () => {
     };
     const ms = validity.remainingMs;
     const dayMs = 86400000;
-    if (ms <= 0) {
+    if (ms <= 0 && reminderPrefs.expiry) {
       fire("expired", () => toast.error("Your swim plan has expired", {
         description: "Renew now to continue your training.",
         duration: 8000,
       }));
-    } else if (ms <= dayMs) {
+    } else if (ms <= dayMs && reminderPrefs.oneDay) {
       fire("1d", () => toast.warning("Your plan expires in less than 1 day", {
         description: `${paidPlan.plan.name} ends ${validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`,
         duration: 8000,
       }));
-    } else if (ms <= 3 * dayMs) {
+    } else if (ms <= 3 * dayMs && reminderPrefs.threeDay) {
       fire("3d", () => toast("Your plan expires in 3 days", {
         description: `${paidPlan.plan.name} ends ${validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`,
         duration: 8000,
       }));
     }
-  }, [paidPlan, validity]);
+  }, [paidPlan, validity, reminderPrefs]);
 
   const totalSwimmers = allSwimmers.length;
   const latest = enrollments[0];
