@@ -1,0 +1,1 @@
+ALTER TABLE public.enrollment_candidates ADD COLUMN IF NOT EXISTS gender text;

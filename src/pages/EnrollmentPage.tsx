@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 interface CandidateForm {
   name: string;
   dob: string;
+  gender: "" | "male" | "female" | "other";
   contact_no: string;
   address: string;
   email: string;
@@ -36,6 +37,7 @@ interface CandidateForm {
 const emptyCandidateForm = (): CandidateForm => ({
   name: "",
   dob: "",
+  gender: "",
   contact_no: "",
   address: "",
   email: "",
@@ -107,6 +109,7 @@ const EnrollmentPage = () => {
     if (!c.contact_no.trim()) return "Contact number is required";
     if (!c.address.trim()) return "Address is required";
     if (!c.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) return "Valid email is required";
+    if (!c.gender) return "Gender is required";
     return null;
   };
 
@@ -150,13 +153,14 @@ const EnrollmentPage = () => {
           enrollment_id: enrollment.id,
           name: c.name.trim(),
           dob: c.dob,
+          gender: c.gender || null,
           contact_no: c.contact_no.trim(),
           address: c.address.trim(),
           email: c.email.trim(),
           photo_url,
           height: c.height.trim() || null,
           weight: c.weight.trim() || null,
-        });
+        } as any);
         if (candErr) throw candErr;
       }
 
@@ -319,6 +323,26 @@ const EnrollmentPage = () => {
                       placeholder="swimmer@email.com"
                       className="bg-sport-dark/60 border-primary/30 text-white placeholder:text-muted-foreground/50 mt-1"
                     />
+                  </div>
+
+                  <div>
+                    <Label className="text-primary text-[10px] uppercase tracking-[0.25em]">Gender *</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      {(["male", "female", "other"] as const).map((g) => (
+                        <button
+                          type="button"
+                          key={g}
+                          onClick={() => updateCandidate("gender", g)}
+                          className={`h-10 rounded-md border text-xs uppercase tracking-wider font-semibold transition-colors ${
+                            current.gender === g
+                              ? "bg-primary/20 border-primary text-primary"
+                              : "bg-sport-dark/60 border-primary/30 text-muted-foreground hover:text-primary"
+                          }`}
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div>

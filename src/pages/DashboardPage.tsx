@@ -13,8 +13,11 @@ import { buildDietPlan, planDurationDays, type DietType } from "@/lib/diet";
 import {
   Loader2, LogOut, Waves, Users, CalendarCheck, CreditCard, ArrowRight,
   UserPlus, Trophy, CheckCircle2, Clock, Mail, Phone, Hash, ShieldCheck,
-  Apple, Drumstick, Leaf, Droplet, Flame, Activity,
+  Apple, Drumstick, Leaf, Droplet, Flame, Activity, Bell, Settings,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Candidate {
   id: string;
@@ -63,6 +66,21 @@ const DashboardPage = () => {
   );
   const [activeSwimmerId, setActiveSwimmerId] = useState<string | null>(null);
   const [now, setNow] = useState<number>(() => Date.now());
+
+  // Reminder preferences
+  type ReminderPrefs = { enabled: boolean; threeDay: boolean; oneDay: boolean; expiry: boolean };
+  const defaultPrefs: ReminderPrefs = { enabled: true, threeDay: true, oneDay: true, expiry: true };
+  const [reminderPrefs, setReminderPrefs] = useState<ReminderPrefs>(() => {
+    try {
+      const raw = localStorage.getItem("reminderPrefs");
+      if (raw) return { ...defaultPrefs, ...JSON.parse(raw) };
+    } catch {}
+    return defaultPrefs;
+  });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  useEffect(() => {
+    try { localStorage.setItem("reminderPrefs", JSON.stringify(reminderPrefs)); } catch {}
+  }, [reminderPrefs]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
@@ -206,11 +224,11 @@ const DashboardPage = () => {
   // (cancel/refund/extend) invalidates prior reminders and avoids stale fires.
   const notifiedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
+    if (!reminderPrefs.enabled) return;
     if (!paidPlan || !validity || validity.isCancelled) return;
     const planKey = paidPlan.id ?? paidPlan.plan.id;
     const version = paidPlan.updatedAt ?? paidPlan.paidAt;
     const key = `expiryNotified:${planKey}:${version}`;
-    // Cleanup older reminder entries for any prior version of this plan
     try {
       const prefix = `expiryNotified:${planKey}:`;
       for (let i = localStorage.length - 1; i >= 0; i--) {
@@ -229,23 +247,23 @@ const DashboardPage = () => {
     };
     const ms = validity.remainingMs;
     const dayMs = 86400000;
-    if (ms <= 0) {
+    if (ms <= 0 && reminderPrefs.expiry) {
       fire("expired", () => toast.error("Your swim plan has expired", {
         description: "Renew now to continue your training.",
         duration: 8000,
       }));
-    } else if (ms <= dayMs) {
+    } else if (ms <= dayMs && reminderPrefs.oneDay) {
       fire("1d", () => toast.warning("Your plan expires in less than 1 day", {
         description: `${paidPlan.plan.name} ends ${validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`,
         duration: 8000,
       }));
-    } else if (ms <= 3 * dayMs) {
+    } else if (ms <= 3 * dayMs && reminderPrefs.threeDay) {
       fire("3d", () => toast("Your plan expires in 3 days", {
         description: `${paidPlan.plan.name} ends ${validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`,
         duration: 8000,
       }));
     }
-  }, [paidPlan, validity]);
+  }, [paidPlan, validity, reminderPrefs]);
 
   const totalSwimmers = allSwimmers.length;
   const latest = enrollments[0];
@@ -311,14 +329,24 @@ const DashboardPage = () => {
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={async () => { await signOut(); navigate("/login"); }}
-            className="border-primary/40 bg-sport-dark/40 backdrop-blur text-primary hover:bg-primary/20 hover:text-sport-dark-foreground uppercase tracking-wider text-xs"
-          >
-            <LogOut className="w-3 h-3 mr-1" /> Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSettingsOpen(true)}
+              className="border-primary/40 bg-sport-dark/40 backdrop-blur text-primary hover:bg-primary/20 hover:text-sport-dark-foreground uppercase tracking-wider text-xs"
+            >
+              <Settings className="w-3 h-3 mr-1" /> Settings
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => { await signOut(); navigate("/login"); }}
+              className="border-primary/40 bg-sport-dark/40 backdrop-blur text-primary hover:bg-primary/20 hover:text-sport-dark-foreground uppercase tracking-wider text-xs"
+            >
+              <LogOut className="w-3 h-3 mr-1" /> Sign out
+            </Button>
+          </div>
         </div>
 
         {/* Welcome + Member ID */}
@@ -696,6 +724,48 @@ const DashboardPage = () => {
           </motion.div>
         )}
       </div>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="bg-sport-dark border-primary/30 text-sport-dark-foreground">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl tracking-wider flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" /> Reminder Settings
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Choose when you'd like to be alerted about your plan expiry.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-card/5 p-3">
+              <div>
+                <Label className="text-sm font-semibold text-sport-dark-foreground">Enable reminders</Label>
+                <p className="text-xs text-muted-foreground">Master switch for all expiry alerts.</p>
+              </div>
+              <Switch
+                checked={reminderPrefs.enabled}
+                onCheckedChange={(v) => setReminderPrefs((p) => ({ ...p, enabled: v }))}
+              />
+            </div>
+            {([
+              { key: "threeDay", label: "3 days before expiry", desc: "Heads-up reminder." },
+              { key: "oneDay", label: "1 day before expiry", desc: "Final renewal nudge." },
+              { key: "expiry", label: "On expiry", desc: "Notify when the plan expires." },
+            ] as const).map((opt) => (
+              <div key={opt.key} className={`flex items-center justify-between rounded-lg border border-primary/20 bg-card/5 p-3 ${!reminderPrefs.enabled ? "opacity-50" : ""}`}>
+                <div>
+                  <Label className="text-sm font-semibold text-sport-dark-foreground">{opt.label}</Label>
+                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                </div>
+                <Switch
+                  disabled={!reminderPrefs.enabled}
+                  checked={reminderPrefs[opt.key]}
+                  onCheckedChange={(v) => setReminderPrefs((p) => ({ ...p, [opt.key]: v }))}
+                />
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
