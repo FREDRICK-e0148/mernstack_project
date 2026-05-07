@@ -139,6 +139,7 @@ const DashboardPage = () => {
             return;
           }
           const synced: PaidPlan = {
+            id: row.id,
             plan: {
               id: row.plan_id,
               name: row.plan_name,
@@ -148,6 +149,7 @@ const DashboardPage = () => {
             },
             method: row.payment_method,
             paidAt: row.paid_at,
+            updatedAt: row.updated_at,
             durationDays: row.duration_days,
             expiresAt: row.expires_at,
             status: row.status ?? "active",
