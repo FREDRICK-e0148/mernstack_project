@@ -34,9 +34,11 @@ interface Enrollment {
 }
 
 interface PaidPlan {
+  id?: string;
   plan: { id: string; name: string; category: string; duration: string; price: number };
   method: string;
   paidAt: string;
+  updatedAt?: string;
   durationDays?: number;
   expiresAt?: string;
   status?: "active" | "cancelled" | "refunded";
