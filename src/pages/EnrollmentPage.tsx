@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 interface CandidateForm {
   name: string;
   dob: string;
+  gender: "" | "male" | "female" | "other";
   contact_no: string;
   address: string;
   email: string;
@@ -36,6 +37,7 @@ interface CandidateForm {
 const emptyCandidateForm = (): CandidateForm => ({
   name: "",
   dob: "",
+  gender: "",
   contact_no: "",
   address: "",
   email: "",
