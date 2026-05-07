@@ -13,8 +13,11 @@ import { buildDietPlan, planDurationDays, type DietType } from "@/lib/diet";
 import {
   Loader2, LogOut, Waves, Users, CalendarCheck, CreditCard, ArrowRight,
   UserPlus, Trophy, CheckCircle2, Clock, Mail, Phone, Hash, ShieldCheck,
-  Apple, Drumstick, Leaf, Droplet, Flame, Activity,
+  Apple, Drumstick, Leaf, Droplet, Flame, Activity, Bell, Settings,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Candidate {
   id: string;
