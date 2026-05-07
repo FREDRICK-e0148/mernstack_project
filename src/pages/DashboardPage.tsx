@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -193,6 +194,41 @@ const DashboardPage = () => {
     const expired = remainingMs <= 0;
     return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired, isCancelled, status: paidPlan.status ?? "active" };
   }, [paidPlan, now]);
+
+  // Expiry reminder notifications: 3 days, 1 day, and on expiry.
+  // Each threshold fires once per plan (tracked via localStorage by paidAt).
+  const notifiedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!paidPlan || !validity || validity.isCancelled) return;
+    const key = `expiryNotified:${paidPlan.paidAt}`;
+    let fired: string[] = [];
+    try { fired = JSON.parse(localStorage.getItem(key) || "[]"); } catch {}
+    const fire = (id: string, fn: () => void) => {
+      if (fired.includes(id) || notifiedRef.current.has(`${key}:${id}`)) return;
+      notifiedRef.current.add(`${key}:${id}`);
+      fired.push(id);
+      try { localStorage.setItem(key, JSON.stringify(fired)); } catch {}
+      fn();
+    };
+    const ms = validity.remainingMs;
+    const dayMs = 86400000;
+    if (ms <= 0) {
+      fire("expired", () => toast.error("Your swim plan has expired", {
+        description: "Renew now to continue your training.",
+        duration: 8000,
+      }));
+    } else if (ms <= dayMs) {
+      fire("1d", () => toast.warning("Your plan expires in less than 1 day", {
+        description: `${paidPlan.plan.name} ends ${validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`,
+        duration: 8000,
+      }));
+    } else if (ms <= 3 * dayMs) {
+      fire("3d", () => toast("Your plan expires in 3 days", {
+        description: `${paidPlan.plan.name} ends ${validity.end.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.`,
+        duration: 8000,
+      }));
+    }
+  }, [paidPlan, validity]);
 
   const totalSwimmers = allSwimmers.length;
   const latest = enrollments[0];
