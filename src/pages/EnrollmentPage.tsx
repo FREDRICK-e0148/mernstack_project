@@ -326,6 +326,26 @@ const EnrollmentPage = () => {
                   </div>
 
                   <div>
+                    <Label className="text-primary text-[10px] uppercase tracking-[0.25em]">Gender *</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-1">
+                      {(["male", "female", "other"] as const).map((g) => (
+                        <button
+                          type="button"
+                          key={g}
+                          onClick={() => updateCandidate("gender", g)}
+                          className={`h-10 rounded-md border text-xs uppercase tracking-wider font-semibold transition-colors ${
+                            current.gender === g
+                              ? "bg-primary/20 border-primary text-primary"
+                              : "bg-sport-dark/60 border-primary/30 text-muted-foreground hover:text-primary"
+                          }`}
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
                     <Label className="text-primary text-[10px] uppercase tracking-[0.25em]">Address *</Label>
                     <Input
                       value={current.address}
