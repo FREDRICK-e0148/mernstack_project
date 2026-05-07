@@ -202,11 +202,22 @@ const DashboardPage = () => {
   }, [paidPlan, now]);
 
   // Expiry reminder notifications: 3 days, 1 day, and on expiry.
-  // Each threshold fires once per plan (tracked via localStorage by paidAt).
+  // Keyed on the paid_plans row id + updated_at so any admin change
+  // (cancel/refund/extend) invalidates prior reminders and avoids stale fires.
   const notifiedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!paidPlan || !validity || validity.isCancelled) return;
-    const key = `expiryNotified:${paidPlan.paidAt}`;
+    const planKey = paidPlan.id ?? paidPlan.plan.id;
+    const version = paidPlan.updatedAt ?? paidPlan.paidAt;
+    const key = `expiryNotified:${planKey}:${version}`;
+    // Cleanup older reminder entries for any prior version of this plan
+    try {
+      const prefix = `expiryNotified:${planKey}:`;
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix) && k !== key) localStorage.removeItem(k);
+      }
+    } catch {}
     let fired: string[] = [];
     try { fired = JSON.parse(localStorage.getItem(key) || "[]"); } catch {}
     const fire = (id: string, fn: () => void) => {
