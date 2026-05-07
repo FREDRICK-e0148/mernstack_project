@@ -724,6 +724,48 @@ const DashboardPage = () => {
           </motion.div>
         )}
       </div>
+
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="bg-sport-dark border-primary/30 text-sport-dark-foreground">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl tracking-wider flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" /> Reminder Settings
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Choose when you'd like to be alerted about your plan expiry.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-card/5 p-3">
+              <div>
+                <Label className="text-sm font-semibold text-sport-dark-foreground">Enable reminders</Label>
+                <p className="text-xs text-muted-foreground">Master switch for all expiry alerts.</p>
+              </div>
+              <Switch
+                checked={reminderPrefs.enabled}
+                onCheckedChange={(v) => setReminderPrefs((p) => ({ ...p, enabled: v }))}
+              />
+            </div>
+            {([
+              { key: "threeDay", label: "3 days before expiry", desc: "Heads-up reminder." },
+              { key: "oneDay", label: "1 day before expiry", desc: "Final renewal nudge." },
+              { key: "expiry", label: "On expiry", desc: "Notify when the plan expires." },
+            ] as const).map((opt) => (
+              <div key={opt.key} className={`flex items-center justify-between rounded-lg border border-primary/20 bg-card/5 p-3 ${!reminderPrefs.enabled ? "opacity-50" : ""}`}>
+                <div>
+                  <Label className="text-sm font-semibold text-sport-dark-foreground">{opt.label}</Label>
+                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                </div>
+                <Switch
+                  disabled={!reminderPrefs.enabled}
+                  checked={reminderPrefs[opt.key]}
+                  onCheckedChange={(v) => setReminderPrefs((p) => ({ ...p, [opt.key]: v }))}
+                />
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
