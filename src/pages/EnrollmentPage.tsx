@@ -109,6 +109,7 @@ const EnrollmentPage = () => {
     if (!c.contact_no.trim()) return "Contact number is required";
     if (!c.address.trim()) return "Address is required";
     if (!c.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) return "Valid email is required";
+    if (!c.gender) return "Gender is required";
     return null;
   };
 
