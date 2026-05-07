@@ -22,6 +22,7 @@ export type Database = {
           dob: string
           email: string
           enrollment_id: string
+          gender: string | null
           height: string | null
           id: string
           name: string
@@ -36,6 +37,7 @@ export type Database = {
           dob: string
           email: string
           enrollment_id: string
+          gender?: string | null
           height?: string | null
           id?: string
           name: string
@@ -50,6 +52,7 @@ export type Database = {
           dob?: string
           email?: string
           enrollment_id?: string
+          gender?: string | null
           height?: string | null
           id?: string
           name?: string
