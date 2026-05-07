@@ -64,6 +64,21 @@ const DashboardPage = () => {
   const [activeSwimmerId, setActiveSwimmerId] = useState<string | null>(null);
   const [now, setNow] = useState<number>(() => Date.now());
 
+  // Reminder preferences
+  type ReminderPrefs = { enabled: boolean; threeDay: boolean; oneDay: boolean; expiry: boolean };
+  const defaultPrefs: ReminderPrefs = { enabled: true, threeDay: true, oneDay: true, expiry: true };
+  const [reminderPrefs, setReminderPrefs] = useState<ReminderPrefs>(() => {
+    try {
+      const raw = localStorage.getItem("reminderPrefs");
+      if (raw) return { ...defaultPrefs, ...JSON.parse(raw) };
+    } catch {}
+    return defaultPrefs;
+  });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  useEffect(() => {
+    try { localStorage.setItem("reminderPrefs", JSON.stringify(reminderPrefs)); } catch {}
+  }, [reminderPrefs]);
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/login");
   }, [user, authLoading, navigate]);
