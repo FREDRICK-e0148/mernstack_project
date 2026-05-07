@@ -153,13 +153,14 @@ const EnrollmentPage = () => {
           enrollment_id: enrollment.id,
           name: c.name.trim(),
           dob: c.dob,
+          gender: c.gender || null,
           contact_no: c.contact_no.trim(),
           address: c.address.trim(),
           email: c.email.trim(),
           photo_url,
           height: c.height.trim() || null,
           weight: c.weight.trim() || null,
-        });
+        } as any);
         if (candErr) throw candErr;
       }
 
