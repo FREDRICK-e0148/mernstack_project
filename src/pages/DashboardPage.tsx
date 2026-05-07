@@ -329,14 +329,24 @@ const DashboardPage = () => {
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={async () => { await signOut(); navigate("/login"); }}
-            className="border-primary/40 bg-sport-dark/40 backdrop-blur text-primary hover:bg-primary/20 hover:text-sport-dark-foreground uppercase tracking-wider text-xs"
-          >
-            <LogOut className="w-3 h-3 mr-1" /> Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSettingsOpen(true)}
+              className="border-primary/40 bg-sport-dark/40 backdrop-blur text-primary hover:bg-primary/20 hover:text-sport-dark-foreground uppercase tracking-wider text-xs"
+            >
+              <Settings className="w-3 h-3 mr-1" /> Settings
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => { await signOut(); navigate("/login"); }}
+              className="border-primary/40 bg-sport-dark/40 backdrop-blur text-primary hover:bg-primary/20 hover:text-sport-dark-foreground uppercase tracking-wider text-xs"
+            >
+              <LogOut className="w-3 h-3 mr-1" /> Sign out
+            </Button>
+          </div>
         </div>
 
         {/* Welcome + Member ID */}
