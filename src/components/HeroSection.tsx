@@ -12,10 +12,10 @@ const HeroSection = () => {
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden bg-sport-dark">
       {/* Background swimmer image */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-40"
-        style={{ backgroundImage: `url(${heroSwimmer})` }}
+        className="absolute inset-0 bg-cover bg-center sm:bg-center opacity-50 sm:opacity-40"
+        style={{ backgroundImage: `url(${heroSwimmer})`, backgroundPosition: "70% center" }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-sport-dark via-sport-dark/80 to-sport-dark/40" />
+      <div className="absolute inset-0 bg-gradient-to-b from-sport-dark/70 via-sport-dark/85 to-sport-dark sm:bg-gradient-to-r sm:from-sport-dark sm:via-sport-dark/80 sm:to-sport-dark/40" />
       {/* Diagonal stripes background */}
       <div className="absolute inset-0 diagonal-stripe opacity-20" />
       
@@ -39,44 +39,44 @@ const HeroSection = () => {
               <span className="text-sm font-semibold text-primary uppercase tracking-wider">4.1 ★ Rated — 261 Reviews</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display text-sport-dark-foreground leading-[0.9] mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-display text-sport-dark-foreground leading-[0.9] mb-4 sm:mb-6">
               DIVE INTO
               <br />
               <span className="text-gradient-sport">GREATNESS</span>
             </h1>
 
-            <p className="text-lg text-muted-foreground max-w-lg mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-lg mb-6 sm:mb-8 leading-relaxed">
               Chennai's premier swimming academy. From beginners to competitive athletes — train with certified coaches in world-class facilities at Mugalivakkam.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-10">
+            <div className="flex flex-wrap gap-4 mb-8 sm:mb-10">
               <Button
                 size="lg"
                 onClick={() => setAuthOpen(true)}
-                className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-8 group"
+                className="w-full sm:w-auto bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-8 group"
               >
                 Enroll Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
 
             <Dialog open={authOpen} onOpenChange={setAuthOpen}>
-              <DialogContent className="bg-sport-dark border-primary/30 text-sport-dark-foreground">
+              <DialogContent className="bg-sport-dark border-primary/30 text-sport-dark-foreground max-w-[92vw] sm:max-w-md rounded-2xl">
                 <DialogHeader>
-                  <DialogTitle className="font-display text-3xl tracking-wider text-center">
+                  <DialogTitle className="font-display text-2xl sm:text-3xl tracking-wider text-center">
                     JOIN THE <span className="text-gradient-sport">ACADEMY</span>
                   </DialogTitle>
-                  <DialogDescription className="text-center text-muted-foreground">
+                  <DialogDescription className="text-center text-muted-foreground text-sm">
                     Already have an account, or new here? Pick one to continue.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <Link to="/login?mode=login" onClick={() => setAuthOpen(false)}>
-                    <Button className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold uppercase tracking-wider">
+                  <Link to="/login?mode=login" onClick={() => setAuthOpen(false)} className="w-full">
+                    <Button className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold uppercase tracking-wider">
                       <LogIn className="w-4 h-4 mr-2" /> Login
                     </Button>
                   </Link>
-                  <Link to="/login?mode=signup" onClick={() => setAuthOpen(false)}>
-                    <Button className="w-full h-14 bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider">
+                  <Link to="/login?mode=signup" onClick={() => setAuthOpen(false)} className="w-full">
+                    <Button className="w-full h-12 sm:h-14 bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider">
                       <UserPlus className="w-4 h-4 mr-2" /> Sign Up
                     </Button>
                   </Link>
@@ -85,7 +85,7 @@ const HeroSection = () => {
             </Dialog>
 
             {/* Stats */}
-            <div className="flex gap-8">
+            <div className="flex gap-4 sm:gap-8 flex-wrap">
               {[
                 { icon: Users, value: "2500+", label: "Students Trained" },
                 { icon: Trophy, value: "15+", label: "Years Experience" },
@@ -93,8 +93,8 @@ const HeroSection = () => {
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
                   <stat.icon className="w-5 h-5 text-primary mx-auto mb-1" />
-                  <div className="font-display text-2xl text-sport-dark-foreground">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+                  <div className="font-display text-xl sm:text-2xl text-sport-dark-foreground">{stat.value}</div>
+                  <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -108,14 +108,9 @@ const HeroSection = () => {
             className="relative hidden lg:block"
           >
             <div className="relative w-full aspect-square">
-              {/* Main circle with swimmer icon */}
-              <div className="absolute inset-8 rounded-full border-4 border-primary/30 flex items-center justify-center">
-                <div className="w-3/4 h-3/4 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  <span className="text-[120px] leading-none">🏊</span>
-                </div>
-              </div>
               {/* Orbit ring */}
               <div className="absolute inset-0 rounded-full border-2 border-dashed border-primary/15 animate-spin" style={{ animationDuration: "30s" }} />
+              <div className="absolute inset-8 rounded-full border-4 border-primary/30" />
               {/* Accent dots */}
               <div className="absolute top-4 left-1/2 w-4 h-4 bg-secondary rounded-full" />
               <div className="absolute bottom-12 right-8 w-3 h-3 bg-accent rounded-full" />
