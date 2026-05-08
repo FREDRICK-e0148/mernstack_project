@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Star, Trophy, Users, LogIn, UserPlus } from "lucide-react";
+import { ChevronRight, Star, Trophy, Users, LogIn, UserPlus, Phone, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import heroSwimmer from "@/assets/hero-swimmer.jpg";
@@ -49,13 +49,37 @@ const HeroSection = () => {
               Chennai's premier swimming academy. From beginners to competitive athletes — train with certified coaches in world-class facilities at Mugalivakkam.
             </p>
 
-            <div className="flex flex-wrap gap-4 mb-8 sm:mb-10">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-8 sm:mb-10">
               <Button
                 size="lg"
                 onClick={() => setAuthOpen(true)}
                 className="w-full sm:w-auto bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-8 group"
               >
                 Enroll Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                className="w-full sm:w-auto bg-[#25D366] hover:bg-[#25D366]/90 text-white font-semibold uppercase tracking-wider text-sm px-6"
+              >
+                <a
+                  href="https://wa.me/919876543210?text=Hi%2C%20I%27m%20interested%20in%20joining%20Friends%20Sports%20Academy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Chat on WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
+                </a>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto border-primary/40 text-primary hover:bg-primary/10 font-semibold uppercase tracking-wider text-sm px-6"
+              >
+                <a href="tel:+919876543210" aria-label="Call Friends Sports Academy">
+                  <Phone className="w-4 h-4 mr-2" /> Call Now
+                </a>
               </Button>
             </div>
 
