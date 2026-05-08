@@ -1,13 +1,23 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Star, Trophy, Users } from "lucide-react";
+import { ChevronRight, Star, Trophy, Users, LogIn, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import heroSwimmer from "@/assets/hero-swimmer.jpg";
 
 const HeroSection = () => {
+  const [authOpen, setAuthOpen] = useState(false);
   return (
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden bg-sport-dark">
+      {/* Background swimmer image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-40"
+        style={{ backgroundImage: `url(${heroSwimmer})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-sport-dark via-sport-dark/80 to-sport-dark/40" />
       {/* Diagonal stripes background */}
-      <div className="absolute inset-0 diagonal-stripe opacity-30" />
+      <div className="absolute inset-0 diagonal-stripe opacity-20" />
       
       {/* Dynamic accent shapes */}
       <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
@@ -40,12 +50,39 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-wrap gap-4 mb-10">
-              <Link to="/login">
-                <Button size="lg" className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-8 group">
-                  Enroll Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                onClick={() => setAuthOpen(true)}
+                className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider text-sm px-8 group"
+              >
+                Enroll Now <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </div>
+
+            <Dialog open={authOpen} onOpenChange={setAuthOpen}>
+              <DialogContent className="bg-sport-dark border-primary/30 text-sport-dark-foreground">
+                <DialogHeader>
+                  <DialogTitle className="font-display text-3xl tracking-wider text-center">
+                    JOIN THE <span className="text-gradient-sport">ACADEMY</span>
+                  </DialogTitle>
+                  <DialogDescription className="text-center text-muted-foreground">
+                    Already have an account, or new here? Pick one to continue.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <Link to="/login?mode=login" onClick={() => setAuthOpen(false)}>
+                    <Button className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold uppercase tracking-wider">
+                      <LogIn className="w-4 h-4 mr-2" /> Login
+                    </Button>
+                  </Link>
+                  <Link to="/login?mode=signup" onClick={() => setAuthOpen(false)}>
+                    <Button className="w-full h-14 bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground font-semibold uppercase tracking-wider">
+                      <UserPlus className="w-4 h-4 mr-2" /> Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Stats */}
             <div className="flex gap-8">
