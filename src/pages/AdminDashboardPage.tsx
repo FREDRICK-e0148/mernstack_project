@@ -39,6 +39,7 @@ const AdminDashboardPage = () => {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [users, setUsers] = useState<AuthUser[]>([]);
   const [paidPlans, setPaidPlans] = useState<any[]>([]);
+  const [contactClicks, setContactClicks] = useState<{ id: string; channel: string; created_at: string; user_id: string | null }[]>([]);
 
   // refund/cancel dialog
   const [planActionOpen, setPlanActionOpen] = useState(false);
