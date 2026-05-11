@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_clicks: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          referrer: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       enrollment_candidates: {
         Row: {
           address: string
