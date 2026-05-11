@@ -5,6 +5,7 @@ import { ChevronRight, Star, Trophy, Users, LogIn, UserPlus, Phone, MessageCircl
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import heroSwimmer from "@/assets/hero-swimmer.jpg";
+import { trackContactClick } from "@/lib/track";
 
 const HeroSection = () => {
   const [authOpen, setAuthOpen] = useState(false);
@@ -67,6 +68,7 @@ const HeroSection = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Chat on WhatsApp"
+                  onClick={() => trackContactClick("whatsapp")}
                 >
                   <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
                 </a>
@@ -77,7 +79,7 @@ const HeroSection = () => {
                 variant="outline"
                 className="w-full sm:w-auto border-primary/40 text-primary hover:bg-primary/10 font-semibold uppercase tracking-wider text-sm px-6"
               >
-                <a href="tel:+919876543210" aria-label="Call Friends Sports Academy">
+                <a href="tel:+919876543210" aria-label="Call Friends Sports Academy" onClick={() => trackContactClick("call")}>
                   <Phone className="w-4 h-4 mr-2" /> Call Now
                 </a>
               </Button>

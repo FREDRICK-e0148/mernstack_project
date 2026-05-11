@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell, CreditCard, Ban, Undo2 } from "lucide-react";
+import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell, CreditCard, Ban, Undo2, MessageCircle, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +39,7 @@ const AdminDashboardPage = () => {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [users, setUsers] = useState<AuthUser[]>([]);
   const [paidPlans, setPaidPlans] = useState<any[]>([]);
+  const [contactClicks, setContactClicks] = useState<{ id: string; channel: string; created_at: string; user_id: string | null }[]>([]);
 
   // refund/cancel dialog
   const [planActionOpen, setPlanActionOpen] = useState(false);
@@ -56,16 +57,18 @@ const AdminDashboardPage = () => {
   const [userForm, setUserForm] = useState({ email: "", password: "" });
 
   const loadAll = async () => {
-    const [c, p, u, pp] = await Promise.all([
+    const [c, p, u, pp, cc] = await Promise.all([
       supabase.from("enrollment_candidates").select("*").order("created_at", { ascending: false }),
       supabase.from("programs").select("*").order("created_at", { ascending: false }),
       supabase.functions.invoke("admin-users", { body: { action: "list" } }),
       supabase.from("paid_plans").select("*").order("paid_at", { ascending: false }),
+      supabase.from("contact_clicks").select("id, channel, created_at, user_id").order("created_at", { ascending: false }).limit(500),
     ]);
     setCandidates(c.data ?? []);
     setPrograms((p.data as Program[]) ?? []);
     setUsers(u.data?.users ?? []);
     setPaidPlans(pp.data ?? []);
+    setContactClicks((cc.data as any[]) ?? []);
   };
 
   useEffect(() => {
@@ -216,6 +219,7 @@ const AdminDashboardPage = () => {
             <TabsTrigger value="programs"><Dumbbell className="w-4 h-4 mr-2" />Programs</TabsTrigger>
             <TabsTrigger value="plans"><CreditCard className="w-4 h-4 mr-2" />Paid Plans</TabsTrigger>
             <TabsTrigger value="users"><UserPlus className="w-4 h-4 mr-2" />Users</TabsTrigger>
+            <TabsTrigger value="inquiries"><MessageCircle className="w-4 h-4 mr-2" />Inquiries</TabsTrigger>
           </TabsList>
 
           {/* ENROLLMENTS */}
@@ -397,6 +401,78 @@ const AdminDashboardPage = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          {/* INQUIRIES (contact button clicks) */}
+          <TabsContent value="inquiries">
+            {(() => {
+              const now = Date.now();
+              const since = (days: number) => contactClicks.filter((c) => now - new Date(c.created_at).getTime() < days * 86400000);
+              const wa = contactClicks.filter((c) => c.channel === "whatsapp");
+              const call = contactClicks.filter((c) => c.channel === "call");
+              const last7 = since(7);
+              const wa7 = last7.filter((c) => c.channel === "whatsapp").length;
+              const call7 = last7.filter((c) => c.channel === "call").length;
+              const total = contactClicks.length || 1;
+              const waPct = Math.round((wa.length / total) * 100);
+              const callPct = 100 - waPct;
+              return (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
+                      <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Total clicks</CardTitle></CardHeader>
+                      <CardContent><p className="font-display text-3xl text-sport-dark-foreground">{contactClicks.length}</p></CardContent>
+                    </Card>
+                    <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
+                      <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MessageCircle className="w-4 h-4 text-[#25D366]" />WhatsApp</CardTitle></CardHeader>
+                      <CardContent>
+                        <p className="font-display text-3xl text-sport-dark-foreground">{wa.length}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{waPct}% share · {wa7} this week</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
+                      <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2"><Phone className="w-4 h-4 text-primary" />Call</CardTitle></CardHeader>
+                      <CardContent>
+                        <p className="font-display text-3xl text-sport-dark-foreground">{call.length}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{callPct}% share · {call7} this week</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
+                      <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Top channel</CardTitle></CardHeader>
+                      <CardContent>
+                        <p className="font-display text-3xl text-sport-dark-foreground">
+                          {contactClicks.length === 0 ? "—" : wa.length >= call.length ? "WhatsApp" : "Call"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">RECENT INQUIRIES</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {contactClicks.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-8">No contact button clicks yet.</p>
+                      ) : (
+                        <div className="space-y-2 max-h-[480px] overflow-y-auto">
+                          {contactClicks.slice(0, 100).map((c) => (
+                            <div key={c.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-3 flex items-center gap-3 text-sm">
+                              {c.channel === "whatsapp" ? (
+                                <Badge className="bg-[#25D366] text-white"><MessageCircle className="w-3 h-3 mr-1" />WhatsApp</Badge>
+                              ) : (
+                                <Badge className="bg-primary text-primary-foreground"><Phone className="w-3 h-3 mr-1" />Call</Badge>
+                              )}
+                              <span className="text-sport-dark-foreground">{new Date(c.created_at).toLocaleString()}</span>
+                              <span className="ml-auto text-xs font-mono text-muted-foreground">{c.user_id ? c.user_id.slice(0, 8) : "guest"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })()}
           </TabsContent>
         </Tabs>
       </div>
