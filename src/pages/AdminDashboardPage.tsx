@@ -219,6 +219,7 @@ const AdminDashboardPage = () => {
             <TabsTrigger value="programs"><Dumbbell className="w-4 h-4 mr-2" />Programs</TabsTrigger>
             <TabsTrigger value="plans"><CreditCard className="w-4 h-4 mr-2" />Paid Plans</TabsTrigger>
             <TabsTrigger value="users"><UserPlus className="w-4 h-4 mr-2" />Users</TabsTrigger>
+            <TabsTrigger value="inquiries"><MessageCircle className="w-4 h-4 mr-2" />Inquiries</TabsTrigger>
           </TabsList>
 
           {/* ENROLLMENTS */}
