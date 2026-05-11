@@ -5,6 +5,7 @@ import { ChevronRight, Star, Trophy, Users, LogIn, UserPlus, Phone, MessageCircl
 import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import heroSwimmer from "@/assets/hero-swimmer.jpg";
+import { trackContactClick } from "@/lib/track";
 
 const HeroSection = () => {
   const [authOpen, setAuthOpen] = useState(false);
