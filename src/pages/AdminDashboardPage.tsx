@@ -27,8 +27,15 @@ interface Program {
 interface AuthUser {
   id: string;
   email: string | null;
+  phone?: string | null;
   created_at: string;
   last_sign_in_at: string | null;
+}
+
+interface Profile {
+  user_id: string;
+  full_name: string | null;
+  phone: string | null;
 }
 
 const AdminDashboardPage = () => {
