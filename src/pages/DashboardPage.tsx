@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { buildDietPlan, planDurationDays, type DietType } from "@/lib/diet";
+import { isClassPlanCategory, countClassDays } from "@/lib/plans";
 import {
   Loader2, LogOut, Waves, Users, CalendarCheck, CreditCard, ArrowRight,
   UserPlus, Trophy, CheckCircle2, Clock, Mail, Phone, Hash, ShieldCheck,
@@ -218,6 +219,20 @@ const DashboardPage = () => {
     const expired = remainingMs <= 0;
     return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired, isCancelled, status: paidPlan.status ?? "active" };
   }, [paidPlan, now]);
+
+  // Class count (Mondays are weekly holidays). Only for coaching / membership plans.
+  const classStats = useMemo(() => {
+    if (!paidPlan || !validity) return null;
+    if (!isClassPlanCategory(paidPlan.plan.category)) return null;
+    const today = new Date(now);
+    const cappedToday = today < validity.end ? today : validity.end;
+    const total = countClassDays(validity.start, validity.end);
+    const completed = validity.isCancelled
+      ? 0
+      : countClassDays(validity.start, cappedToday);
+    const remaining = Math.max(0, total - completed);
+    return { total, completed, remaining };
+  }, [paidPlan, validity, now]);
 
   // Expiry reminder notifications: 3 days, 1 day, and on expiry.
   // Keyed on the paid_plans row id + updated_at so any admin change
@@ -453,6 +468,23 @@ const DashboardPage = () => {
                       {paidPlan?.cancellationReason && (
                         <p className="text-muted-foreground">Reason: {paidPlan.cancellationReason}</p>
                       )}
+                    </div>
+                  )}
+                  {classStats && (
+                    <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-primary text-[10px] uppercase tracking-[0.3em] font-semibold">
+                          Class Count · Mondays Off
+                        </p>
+                        <Badge className="bg-sport-energy/20 text-sport-energy border border-sport-energy/40 text-[10px] uppercase">
+                          Holiday: Mon
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <Mini label="Total Classes" value={String(classStats.total)} />
+                        <Mini label="Completed" value={String(classStats.completed)} />
+                        <Mini label="Remaining" value={String(classStats.remaining)} />
+                      </div>
                     </div>
                   )}
                 </>

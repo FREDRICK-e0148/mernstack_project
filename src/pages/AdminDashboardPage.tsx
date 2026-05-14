@@ -9,10 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell, CreditCard, Ban, Undo2, MessageCircle, Phone } from "lucide-react";
+import { Loader2, LogOut, Shield, Users, Trash2, Plus, Pencil, UserPlus, Dumbbell, CreditCard, Ban, Undo2, MessageCircle, Phone, Search, Eye, CalendarPlus, CalendarMinus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { isClassPlanCategory } from "@/lib/plans";
 
 interface Program {
   id: string;
@@ -26,8 +27,15 @@ interface Program {
 interface AuthUser {
   id: string;
   email: string | null;
+  phone?: string | null;
   created_at: string;
   last_sign_in_at: string | null;
+}
+
+interface Profile {
+  user_id: string;
+  full_name: string | null;
+  phone: string | null;
 }
 
 const AdminDashboardPage = () => {
@@ -40,6 +48,10 @@ const AdminDashboardPage = () => {
   const [users, setUsers] = useState<AuthUser[]>([]);
   const [paidPlans, setPaidPlans] = useState<any[]>([]);
   const [contactClicks, setContactClicks] = useState<{ id: string; channel: string; created_at: string; user_id: string | null }[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [enrollmentsAll, setEnrollmentsAll] = useState<any[]>([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [viewUser, setViewUser] = useState<AuthUser | null>(null);
 
   // refund/cancel dialog
   const [planActionOpen, setPlanActionOpen] = useState(false);
@@ -57,18 +69,22 @@ const AdminDashboardPage = () => {
   const [userForm, setUserForm] = useState({ email: "", password: "" });
 
   const loadAll = async () => {
-    const [c, p, u, pp, cc] = await Promise.all([
+    const [c, p, u, pp, cc, pr, en] = await Promise.all([
       supabase.from("enrollment_candidates").select("*").order("created_at", { ascending: false }),
       supabase.from("programs").select("*").order("created_at", { ascending: false }),
       supabase.functions.invoke("admin-users", { body: { action: "list" } }),
       supabase.from("paid_plans").select("*").order("paid_at", { ascending: false }),
       supabase.from("contact_clicks").select("id, channel, created_at, user_id").order("created_at", { ascending: false }).limit(500),
+      supabase.from("profiles").select("user_id, full_name, phone"),
+      supabase.from("enrollments").select("id, user_id, created_at, enrollment_candidates(*)").order("created_at", { ascending: false }),
     ]);
     setCandidates(c.data ?? []);
     setPrograms((p.data as Program[]) ?? []);
     setUsers(u.data?.users ?? []);
     setPaidPlans(pp.data ?? []);
     setContactClicks((cc.data as any[]) ?? []);
+    setProfiles((pr.data as Profile[]) ?? []);
+    setEnrollmentsAll((en.data as any[]) ?? []);
   };
 
   useEffect(() => {
@@ -186,6 +202,53 @@ const AdminDashboardPage = () => {
   };
 
   const userEmail = (uid: string) => users.find((u) => u.id === uid)?.email ?? uid.slice(0, 8);
+
+  // Build phone index: profile.phone OR any candidate.contact_no for the user.
+  const userPhones = (uid: string) => {
+    const out = new Set<string>();
+    const p = profiles.find((x) => x.user_id === uid)?.phone;
+    if (p) out.add(p);
+    enrollmentsAll
+      .filter((e) => e.user_id === uid)
+      .forEach((e) => (e.enrollment_candidates ?? []).forEach((c: any) => c.contact_no && out.add(c.contact_no)));
+    return Array.from(out);
+  };
+  const userFullName = (uid: string) =>
+    profiles.find((x) => x.user_id === uid)?.full_name ?? null;
+
+  const filteredUsers = users.filter((u) => {
+    const q = userSearch.trim().toLowerCase();
+    if (!q) return true;
+    if ((u.email ?? "").toLowerCase().includes(q)) return true;
+    if ((u.phone ?? "").toLowerCase().includes(q)) return true;
+    const name = userFullName(u.id);
+    if (name && name.toLowerCase().includes(q)) return true;
+    return userPhones(u.id).some((ph) => ph.toLowerCase().includes(q));
+  });
+
+  // Add or remove days for an active coaching/membership plan.
+  const adjustPlanDays = async (plan: any, deltaDays: number) => {
+    if (!isClassPlanCategory(plan.plan_category)) {
+      return toast({ title: "Not allowed", description: "Only Coaching & Membership plans can be adjusted.", variant: "destructive" });
+    }
+    const current = new Date(plan.expires_at).getTime();
+    const next = new Date(current + deltaDays * 86400000);
+    const newDuration = Math.max(1, (plan.duration_days ?? 0) + deltaDays);
+    const { error } = await supabase
+      .from("paid_plans")
+      .update({ expires_at: next.toISOString(), duration_days: newDuration })
+      .eq("id", plan.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    toast({
+      title: deltaDays > 0 ? `Added ${deltaDays} day${deltaDays > 1 ? "s" : ""}` : `Removed ${Math.abs(deltaDays)} day${Math.abs(deltaDays) > 1 ? "s" : ""}`,
+      description: "User dashboard will update immediately.",
+    });
+    loadAll();
+  };
+
+  const userPaidPlans = (uid: string) => paidPlans.filter((p) => p.user_id === uid);
+  const userEnrollments = (uid: string) => enrollmentsAll.filter((e) => e.user_id === uid);
+
 
   if (authLoading || checking) {
     return (
@@ -343,7 +406,41 @@ const AdminDashboardPage = () => {
                               </div>
                             )}
                           </div>
-                          <div className="flex gap-2 shrink-0">
+                          <div className="flex flex-wrap gap-2 shrink-0">
+                            {isClassPlanCategory(p.plan_category) && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={status !== "active"}
+                                  onClick={() => adjustPlanDays(p, 1)}
+                                  className="border-primary/40 text-primary hover:bg-primary/10"
+                                  title="Extend by 1 day"
+                                >
+                                  <CalendarPlus className="w-3 h-3 mr-1" /> +1d
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={status !== "active"}
+                                  onClick={() => adjustPlanDays(p, 7)}
+                                  className="border-primary/40 text-primary hover:bg-primary/10"
+                                  title="Extend by 7 days"
+                                >
+                                  <CalendarPlus className="w-3 h-3 mr-1" /> +7d
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={status !== "active"}
+                                  onClick={() => adjustPlanDays(p, -1)}
+                                  className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10"
+                                  title="Reduce by 1 day"
+                                >
+                                  <CalendarMinus className="w-3 h-3 mr-1" /> -1d
+                                </Button>
+                              </>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"
@@ -375,29 +472,62 @@ const AdminDashboardPage = () => {
           {/* USERS */}
           <TabsContent value="users">
             <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
-                  USERS ({users.length})
+                  USERS ({filteredUsers.length}/{users.length})
                 </CardTitle>
-                <Button onClick={() => setUserOpen(true)} className="bg-sport-energy text-sport-energy-foreground hover:bg-sport-energy/90">
-                  <UserPlus className="w-4 h-4 mr-2" /> Add User
-                </Button>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-72">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by phone, email or name…"
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="pl-9 bg-sport-dark/40 border-primary/30 text-sport-dark-foreground"
+                    />
+                  </div>
+                  <Button onClick={() => setUserOpen(true)} className="bg-sport-energy text-sport-energy-foreground hover:bg-sport-energy/90">
+                    <UserPlus className="w-4 h-4 mr-2" /> Add User
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {users.map((u) => (
-                    <div key={u.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
-                      <div className="text-sm">
-                        <p className="text-sport-dark-foreground font-semibold">{u.email}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Joined {new Date(u.created_at).toLocaleDateString()} · Last login {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "never"}
-                        </p>
+                  {filteredUsers.length === 0 && (
+                    <p className="text-muted-foreground text-center py-8">No users match your search.</p>
+                  )}
+                  {filteredUsers.map((u) => {
+                    const phones = userPhones(u.id);
+                    const name = userFullName(u.id);
+                    return (
+                      <div key={u.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-3 flex items-center justify-between gap-2">
+                        <div className="text-sm min-w-0 flex-1">
+                          <p className="text-sport-dark-foreground font-semibold truncate">
+                            {name ? `${name} · ` : ""}{u.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                            {phones.length > 0 ? (
+                              phones.map((ph) => (
+                                <span key={ph} className="flex items-center gap-1 text-primary">
+                                  <Phone className="w-3 h-3" /> {ph}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="italic">No phone on file</span>
+                            )}
+                            <span>Joined {new Date(u.created_at).toLocaleDateString()}</span>
+                            <span>Last login {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "never"}</span>
+                          </p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setViewUser(u)} className="border-primary/40 text-primary hover:bg-primary/10">
+                          <Eye className="w-3 h-3 mr-1" /> View
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => deleteUser(u.id)} className="text-destructive hover:bg-destructive/10">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                      <Button size="icon" variant="ghost" onClick={() => deleteUser(u.id)} className="text-destructive hover:bg-destructive/10">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -553,6 +683,72 @@ const AdminDashboardPage = () => {
               Confirm {planAction === "refunded" ? "Refund" : "Cancellation"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* User info dialog */}
+      <Dialog open={!!viewUser} onOpenChange={(o) => !o && setViewUser(null)}>
+        <DialogContent className="bg-sport-dark border-primary/30 max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
+              USER PROFILE
+            </DialogTitle>
+          </DialogHeader>
+          {viewUser && (
+            <div className="space-y-4 text-sm">
+              <div className="bg-card/10 border border-primary/20 rounded p-3 grid grid-cols-2 gap-2">
+                <div><span className="text-muted-foreground text-xs uppercase">Name</span><p className="text-sport-dark-foreground">{userFullName(viewUser.id) ?? "—"}</p></div>
+                <div><span className="text-muted-foreground text-xs uppercase">Email</span><p className="text-sport-dark-foreground truncate">{viewUser.email}</p></div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground text-xs uppercase">Phone numbers</span>
+                  <p className="text-primary">{userPhones(viewUser.id).join(", ") || "—"}</p>
+                </div>
+                <div><span className="text-muted-foreground text-xs uppercase">Joined</span><p className="text-sport-dark-foreground">{new Date(viewUser.created_at).toLocaleString()}</p></div>
+                <div><span className="text-muted-foreground text-xs uppercase">Last login</span><p className="text-sport-dark-foreground">{viewUser.last_sign_in_at ? new Date(viewUser.last_sign_in_at).toLocaleString() : "Never"}</p></div>
+                <div className="col-span-2"><span className="text-muted-foreground text-xs uppercase">User ID</span><p className="text-primary text-xs font-mono break-all">{viewUser.id}</p></div>
+              </div>
+
+              <div>
+                <p className="text-primary text-xs uppercase tracking-[0.3em] font-semibold mb-2">Enrolled Swimmers</p>
+                {userEnrollments(viewUser.id).flatMap((e) => e.enrollment_candidates ?? []).length === 0 ? (
+                  <p className="text-muted-foreground text-xs">No enrollments.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {userEnrollments(viewUser.id).flatMap((e) => e.enrollment_candidates ?? []).map((c: any) => (
+                      <div key={c.id} className="bg-sport-dark/50 border border-primary/20 rounded p-2 flex items-center gap-3">
+                        {c.photo_url ? (
+                          <img src={c.photo_url} alt={c.name} className="w-10 h-10 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs">{c.name?.charAt(0)}</div>
+                        )}
+                        <div className="text-xs flex-1">
+                          <p className="text-sport-dark-foreground font-semibold">{c.name}</p>
+                          <p className="text-muted-foreground">{c.contact_no} · {c.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-primary text-xs uppercase tracking-[0.3em] font-semibold mb-2">Paid Plans</p>
+                {userPaidPlans(viewUser.id).length === 0 ? (
+                  <p className="text-muted-foreground text-xs">No plans purchased.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {userPaidPlans(viewUser.id).map((p) => (
+                      <div key={p.id} className="bg-sport-dark/50 border border-primary/20 rounded p-2 text-xs">
+                        <p className="text-sport-dark-foreground font-semibold">{p.plan_name}</p>
+                        <p className="text-muted-foreground">{p.plan_category} · {p.plan_duration} · ₹{Number(p.plan_price).toLocaleString()}</p>
+                        <p className="text-muted-foreground">Expires {new Date(p.expires_at).toLocaleString()} · Status: {p.status}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -54,6 +54,31 @@ export const PLANS: Plan[] = [
   { id: "aqua-zumba", category: "Aqua Zumba", name: "Aqua Zumba (Ladies Only)", duration: "Monthly · 2 days/week", price: 2000, note: "Weight Loss Program" },
 ];
 
+// Categories where classes are scheduled (Mondays are holidays).
+// Excludes one-time / open-access categories like Gym & Shuttle and Aqua Zumba.
+export const isClassPlanCategory = (category?: string | null) => {
+  if (!category) return false;
+  return (
+    category.includes("Coaching") ||
+    category.includes("Membership") ||
+    category === "Memberships & Plans" ||
+    category === "Yearly Plans" ||
+    category === "Weekend Plans"
+  );
+};
+
+// Mondays are weekly holidays. Count non-Monday days in [start, end).
+export const countClassDays = (start: Date, end: Date) => {
+  if (end <= start) return 0;
+  const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  let count = 0;
+  for (let d = new Date(s); d < e; d.setDate(d.getDate() + 1)) {
+    if (d.getDay() !== 1) count++; // 1 = Monday
+  }
+  return count;
+};
+
 export const PLAN_CATEGORIES = [
   "Memberships & Plans",
   "Yearly Plans",
