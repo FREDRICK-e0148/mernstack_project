@@ -406,7 +406,41 @@ const AdminDashboardPage = () => {
                               </div>
                             )}
                           </div>
-                          <div className="flex gap-2 shrink-0">
+                          <div className="flex flex-wrap gap-2 shrink-0">
+                            {isClassPlanCategory(p.plan_category) && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={status !== "active"}
+                                  onClick={() => adjustPlanDays(p, 1)}
+                                  className="border-primary/40 text-primary hover:bg-primary/10"
+                                  title="Extend by 1 day"
+                                >
+                                  <CalendarPlus className="w-3 h-3 mr-1" /> +1d
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={status !== "active"}
+                                  onClick={() => adjustPlanDays(p, 7)}
+                                  className="border-primary/40 text-primary hover:bg-primary/10"
+                                  title="Extend by 7 days"
+                                >
+                                  <CalendarPlus className="w-3 h-3 mr-1" /> +7d
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={status !== "active"}
+                                  onClick={() => adjustPlanDays(p, -1)}
+                                  className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10"
+                                  title="Reduce by 1 day"
+                                >
+                                  <CalendarMinus className="w-3 h-3 mr-1" /> -1d
+                                </Button>
+                              </>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"
