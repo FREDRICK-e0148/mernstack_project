@@ -470,6 +470,23 @@ const DashboardPage = () => {
                       )}
                     </div>
                   )}
+                  {classStats && (
+                    <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-primary text-[10px] uppercase tracking-[0.3em] font-semibold">
+                          Class Count · Mondays Off
+                        </p>
+                        <Badge className="bg-sport-energy/20 text-sport-energy border border-sport-energy/40 text-[10px] uppercase">
+                          Holiday: Mon
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <Mini label="Total Classes" value={String(classStats.total)} />
+                        <Mini label="Completed" value={String(classStats.completed)} />
+                        <Mini label="Remaining" value={String(classStats.remaining)} />
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-center py-6">
