@@ -79,15 +79,6 @@ export const countClassDays = (start: Date, end: Date) => {
   return count;
 };
 
-export const planDurationDays = (duration: string): number => {
-  const d = duration.toLowerCase();
-  const num = parseInt(d.match(/\d+/)?.[0] ?? "0", 10);
-  if (d.includes("year")) return num * 365;
-  if (d.includes("month")) return num * 30;
-  if (d.includes("day")) return num;
-  return 30;
-};
-
 export const PLAN_CATEGORIES = [
   "Memberships & Plans",
   "Yearly Plans",
