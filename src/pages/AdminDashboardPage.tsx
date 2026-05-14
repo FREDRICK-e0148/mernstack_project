@@ -472,29 +472,62 @@ const AdminDashboardPage = () => {
           {/* USERS */}
           <TabsContent value="users">
             <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
-                  USERS ({users.length})
+                  USERS ({filteredUsers.length}/{users.length})
                 </CardTitle>
-                <Button onClick={() => setUserOpen(true)} className="bg-sport-energy text-sport-energy-foreground hover:bg-sport-energy/90">
-                  <UserPlus className="w-4 h-4 mr-2" /> Add User
-                </Button>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-72">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by phone, email or name…"
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      className="pl-9 bg-sport-dark/40 border-primary/30 text-sport-dark-foreground"
+                    />
+                  </div>
+                  <Button onClick={() => setUserOpen(true)} className="bg-sport-energy text-sport-energy-foreground hover:bg-sport-energy/90">
+                    <UserPlus className="w-4 h-4 mr-2" /> Add User
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {users.map((u) => (
-                    <div key={u.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
-                      <div className="text-sm">
-                        <p className="text-sport-dark-foreground font-semibold">{u.email}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Joined {new Date(u.created_at).toLocaleDateString()} · Last login {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "never"}
-                        </p>
+                  {filteredUsers.length === 0 && (
+                    <p className="text-muted-foreground text-center py-8">No users match your search.</p>
+                  )}
+                  {filteredUsers.map((u) => {
+                    const phones = userPhones(u.id);
+                    const name = userFullName(u.id);
+                    return (
+                      <div key={u.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-3 flex items-center justify-between gap-2">
+                        <div className="text-sm min-w-0 flex-1">
+                          <p className="text-sport-dark-foreground font-semibold truncate">
+                            {name ? `${name} · ` : ""}{u.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                            {phones.length > 0 ? (
+                              phones.map((ph) => (
+                                <span key={ph} className="flex items-center gap-1 text-primary">
+                                  <Phone className="w-3 h-3" /> {ph}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="italic">No phone on file</span>
+                            )}
+                            <span>Joined {new Date(u.created_at).toLocaleDateString()}</span>
+                            <span>Last login {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "never"}</span>
+                          </p>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => setViewUser(u)} className="border-primary/40 text-primary hover:bg-primary/10">
+                          <Eye className="w-3 h-3 mr-1" /> View
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => deleteUser(u.id)} className="text-destructive hover:bg-destructive/10">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                      <Button size="icon" variant="ghost" onClick={() => deleteUser(u.id)} className="text-destructive hover:bg-destructive/10">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
