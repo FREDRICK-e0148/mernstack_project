@@ -203,6 +203,53 @@ const AdminDashboardPage = () => {
 
   const userEmail = (uid: string) => users.find((u) => u.id === uid)?.email ?? uid.slice(0, 8);
 
+  // Build phone index: profile.phone OR any candidate.contact_no for the user.
+  const userPhones = (uid: string) => {
+    const out = new Set<string>();
+    const p = profiles.find((x) => x.user_id === uid)?.phone;
+    if (p) out.add(p);
+    enrollmentsAll
+      .filter((e) => e.user_id === uid)
+      .forEach((e) => (e.enrollment_candidates ?? []).forEach((c: any) => c.contact_no && out.add(c.contact_no)));
+    return Array.from(out);
+  };
+  const userFullName = (uid: string) =>
+    profiles.find((x) => x.user_id === uid)?.full_name ?? null;
+
+  const filteredUsers = users.filter((u) => {
+    const q = userSearch.trim().toLowerCase();
+    if (!q) return true;
+    if ((u.email ?? "").toLowerCase().includes(q)) return true;
+    if ((u.phone ?? "").toLowerCase().includes(q)) return true;
+    const name = userFullName(u.id);
+    if (name && name.toLowerCase().includes(q)) return true;
+    return userPhones(u.id).some((ph) => ph.toLowerCase().includes(q));
+  });
+
+  // Add or remove days for an active coaching/membership plan.
+  const adjustPlanDays = async (plan: any, deltaDays: number) => {
+    if (!isClassPlanCategory(plan.plan_category)) {
+      return toast({ title: "Not allowed", description: "Only Coaching & Membership plans can be adjusted.", variant: "destructive" });
+    }
+    const current = new Date(plan.expires_at).getTime();
+    const next = new Date(current + deltaDays * 86400000);
+    const newDuration = Math.max(1, (plan.duration_days ?? 0) + deltaDays);
+    const { error } = await supabase
+      .from("paid_plans")
+      .update({ expires_at: next.toISOString(), duration_days: newDuration })
+      .eq("id", plan.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    toast({
+      title: deltaDays > 0 ? `Added ${deltaDays} day${deltaDays > 1 ? "s" : ""}` : `Removed ${Math.abs(deltaDays)} day${Math.abs(deltaDays) > 1 ? "s" : ""}`,
+      description: "User dashboard will update immediately.",
+    });
+    loadAll();
+  };
+
+  const userPaidPlans = (uid: string) => paidPlans.filter((p) => p.user_id === uid);
+  const userEnrollments = (uid: string) => enrollmentsAll.filter((e) => e.user_id === uid);
+
+
   if (authLoading || checking) {
     return (
       <div className="min-h-screen bg-sport-dark flex items-center justify-center">
