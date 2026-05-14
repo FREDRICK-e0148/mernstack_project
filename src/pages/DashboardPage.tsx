@@ -220,6 +220,20 @@ const DashboardPage = () => {
     return { start, end, days, remainingDays, remainingHours, remainingMinutes, remainingSeconds, remainingMs, progressPct, expired, isCancelled, status: paidPlan.status ?? "active" };
   }, [paidPlan, now]);
 
+  // Class count (Mondays are weekly holidays). Only for coaching / membership plans.
+  const classStats = useMemo(() => {
+    if (!paidPlan || !validity) return null;
+    if (!isClassPlanCategory(paidPlan.plan.category)) return null;
+    const today = new Date(now);
+    const cappedToday = today < validity.end ? today : validity.end;
+    const total = countClassDays(validity.start, validity.end);
+    const completed = validity.isCancelled
+      ? 0
+      : countClassDays(validity.start, cappedToday);
+    const remaining = Math.max(0, total - completed);
+    return { total, completed, remaining };
+  }, [paidPlan, validity, now]);
+
   // Expiry reminder notifications: 3 days, 1 day, and on expiry.
   // Keyed on the paid_plans row id + updated_at so any admin change
   // (cancel/refund/extend) invalidates prior reminders and avoids stale fires.
