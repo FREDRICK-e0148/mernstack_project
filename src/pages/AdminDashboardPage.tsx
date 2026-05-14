@@ -69,18 +69,22 @@ const AdminDashboardPage = () => {
   const [userForm, setUserForm] = useState({ email: "", password: "" });
 
   const loadAll = async () => {
-    const [c, p, u, pp, cc] = await Promise.all([
+    const [c, p, u, pp, cc, pr, en] = await Promise.all([
       supabase.from("enrollment_candidates").select("*").order("created_at", { ascending: false }),
       supabase.from("programs").select("*").order("created_at", { ascending: false }),
       supabase.functions.invoke("admin-users", { body: { action: "list" } }),
       supabase.from("paid_plans").select("*").order("paid_at", { ascending: false }),
       supabase.from("contact_clicks").select("id, channel, created_at, user_id").order("created_at", { ascending: false }).limit(500),
+      supabase.from("profiles").select("user_id, full_name, phone"),
+      supabase.from("enrollments").select("id, user_id, created_at, enrollment_candidates(*)").order("created_at", { ascending: false }),
     ]);
     setCandidates(c.data ?? []);
     setPrograms((p.data as Program[]) ?? []);
     setUsers(u.data?.users ?? []);
     setPaidPlans(pp.data ?? []);
     setContactClicks((cc.data as any[]) ?? []);
+    setProfiles((pr.data as Profile[]) ?? []);
+    setEnrollmentsAll((en.data as any[]) ?? []);
   };
 
   useEffect(() => {
