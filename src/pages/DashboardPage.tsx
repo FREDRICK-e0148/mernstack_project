@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { buildDietPlan, planDurationDays, type DietType } from "@/lib/diet";
+import { isClassPlanCategory, countClassDays } from "@/lib/plans";
 import {
   Loader2, LogOut, Waves, Users, CalendarCheck, CreditCard, ArrowRight,
   UserPlus, Trophy, CheckCircle2, Clock, Mail, Phone, Hash, ShieldCheck,
