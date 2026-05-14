@@ -685,6 +685,72 @@ const AdminDashboardPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* User info dialog */}
+      <Dialog open={!!viewUser} onOpenChange={(o) => !o && setViewUser(null)}>
+        <DialogContent className="bg-sport-dark border-primary/30 max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">
+              USER PROFILE
+            </DialogTitle>
+          </DialogHeader>
+          {viewUser && (
+            <div className="space-y-4 text-sm">
+              <div className="bg-card/10 border border-primary/20 rounded p-3 grid grid-cols-2 gap-2">
+                <div><span className="text-muted-foreground text-xs uppercase">Name</span><p className="text-sport-dark-foreground">{userFullName(viewUser.id) ?? "—"}</p></div>
+                <div><span className="text-muted-foreground text-xs uppercase">Email</span><p className="text-sport-dark-foreground truncate">{viewUser.email}</p></div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground text-xs uppercase">Phone numbers</span>
+                  <p className="text-primary">{userPhones(viewUser.id).join(", ") || "—"}</p>
+                </div>
+                <div><span className="text-muted-foreground text-xs uppercase">Joined</span><p className="text-sport-dark-foreground">{new Date(viewUser.created_at).toLocaleString()}</p></div>
+                <div><span className="text-muted-foreground text-xs uppercase">Last login</span><p className="text-sport-dark-foreground">{viewUser.last_sign_in_at ? new Date(viewUser.last_sign_in_at).toLocaleString() : "Never"}</p></div>
+                <div className="col-span-2"><span className="text-muted-foreground text-xs uppercase">User ID</span><p className="text-primary text-xs font-mono break-all">{viewUser.id}</p></div>
+              </div>
+
+              <div>
+                <p className="text-primary text-xs uppercase tracking-[0.3em] font-semibold mb-2">Enrolled Swimmers</p>
+                {userEnrollments(viewUser.id).flatMap((e) => e.enrollment_candidates ?? []).length === 0 ? (
+                  <p className="text-muted-foreground text-xs">No enrollments.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {userEnrollments(viewUser.id).flatMap((e) => e.enrollment_candidates ?? []).map((c: any) => (
+                      <div key={c.id} className="bg-sport-dark/50 border border-primary/20 rounded p-2 flex items-center gap-3">
+                        {c.photo_url ? (
+                          <img src={c.photo_url} alt={c.name} className="w-10 h-10 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs">{c.name?.charAt(0)}</div>
+                        )}
+                        <div className="text-xs flex-1">
+                          <p className="text-sport-dark-foreground font-semibold">{c.name}</p>
+                          <p className="text-muted-foreground">{c.contact_no} · {c.email}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-primary text-xs uppercase tracking-[0.3em] font-semibold mb-2">Paid Plans</p>
+                {userPaidPlans(viewUser.id).length === 0 ? (
+                  <p className="text-muted-foreground text-xs">No plans purchased.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {userPaidPlans(viewUser.id).map((p) => (
+                      <div key={p.id} className="bg-sport-dark/50 border border-primary/20 rounded p-2 text-xs">
+                        <p className="text-sport-dark-foreground font-semibold">{p.plan_name}</p>
+                        <p className="text-muted-foreground">{p.plan_category} · {p.plan_duration} · ₹{Number(p.plan_price).toLocaleString()}</p>
+                        <p className="text-muted-foreground">Expires {new Date(p.expires_at).toLocaleString()} · Status: {p.status}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
