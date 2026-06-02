@@ -585,8 +585,35 @@ const AdminDashboardPage = () => {
                         disabled={contactClicks.length === 0}
                         onClick={() => {
                           const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-                          const header = ["id", "channel", "created_at", "user_id"];
-                          const rows = contactClicks.map((c) => [c.id, c.channel, c.created_at, c.user_id ?? ""].map(esc).join(","));
+                          const header = ["id", "channel", "created_at", "user_id", "full_name", "phone", "plan_name", "plan_category", "plan_status", "plan_expires_at"];
+                          const rows = contactClicks.map((c) => {
+                            const prof = c.user_id ? profiles.find((p) => p.user_id === c.user_id) : null;
+                            const clickTime = new Date(c.created_at).getTime();
+                            const userPlans = c.user_id ? paidPlans.filter((p) => p.user_id === c.user_id) : [];
+                            // Plan active at click time, else most recent prior plan, else latest
+                            const plan =
+                              userPlans.find((p) => {
+                                const paid = new Date(p.paid_at).getTime();
+                                const exp = new Date(p.expires_at).getTime();
+                                return p.status === "active" && paid <= clickTime && exp >= clickTime;
+                              }) ??
+                              userPlans
+                                .filter((p) => new Date(p.paid_at).getTime() <= clickTime)
+                                .sort((a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime())[0] ??
+                              userPlans[0];
+                            return [
+                              c.id,
+                              c.channel,
+                              c.created_at,
+                              c.user_id ?? "",
+                              prof?.full_name ?? "",
+                              prof?.phone ?? "",
+                              plan?.plan_name ?? "",
+                              plan?.plan_category ?? "",
+                              plan?.status ?? "",
+                              plan?.expires_at ?? "",
+                            ].map(esc).join(",");
+                          });
                           const csv = [header.join(","), ...rows].join("\n");
                           const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
                           const url = URL.createObjectURL(blob);
