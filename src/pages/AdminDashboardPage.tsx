@@ -51,6 +51,7 @@ const AdminDashboardPage = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [enrollmentsAll, setEnrollmentsAll] = useState<any[]>([]);
   const [userSearch, setUserSearch] = useState("");
+  const [inquiryPhone, setInquiryPhone] = useState("");
   const [viewUser, setViewUser] = useState<AuthUser | null>(null);
 
   // refund/cancel dialog
@@ -536,13 +537,21 @@ const AdminDashboardPage = () => {
           <TabsContent value="inquiries">
             {(() => {
               const now = Date.now();
-              const since = (days: number) => contactClicks.filter((c) => now - new Date(c.created_at).getTime() < days * 86400000);
-              const wa = contactClicks.filter((c) => c.channel === "whatsapp");
-              const call = contactClicks.filter((c) => c.channel === "call");
+              const phoneQ = inquiryPhone.replace(/\D/g, "");
+              const filteredClicks = phoneQ
+                ? contactClicks.filter((c) => {
+                    if (!c.user_id) return false;
+                    const prof = profiles.find((p) => p.user_id === c.user_id);
+                    return (prof?.phone ?? "").replace(/\D/g, "").includes(phoneQ);
+                  })
+                : contactClicks;
+              const since = (days: number) => filteredClicks.filter((c) => now - new Date(c.created_at).getTime() < days * 86400000);
+              const wa = filteredClicks.filter((c) => c.channel === "whatsapp");
+              const call = filteredClicks.filter((c) => c.channel === "call");
               const last7 = since(7);
               const wa7 = last7.filter((c) => c.channel === "whatsapp").length;
               const call7 = last7.filter((c) => c.channel === "call").length;
-              const total = contactClicks.length || 1;
+              const total = filteredClicks.length || 1;
               const waPct = Math.round((wa.length / total) * 100);
               const callPct = 100 - waPct;
               return (
@@ -550,7 +559,7 @@ const AdminDashboardPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
                       <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Total clicks</CardTitle></CardHeader>
-                      <CardContent><p className="font-display text-3xl text-sport-dark-foreground">{contactClicks.length}</p></CardContent>
+                      <CardContent><p className="font-display text-3xl text-sport-dark-foreground">{filteredClicks.length}</p></CardContent>
                     </Card>
                     <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
                       <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MessageCircle className="w-4 h-4 text-[#25D366]" />WhatsApp</CardTitle></CardHeader>
@@ -570,71 +579,91 @@ const AdminDashboardPage = () => {
                       <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Top channel</CardTitle></CardHeader>
                       <CardContent>
                         <p className="font-display text-3xl text-sport-dark-foreground">
-                          {contactClicks.length === 0 ? "—" : wa.length >= call.length ? "WhatsApp" : "Call"}
+                          {filteredClicks.length === 0 ? "—" : wa.length >= call.length ? "WhatsApp" : "Call"}
                         </p>
                       </CardContent>
                     </Card>
                   </div>
 
                   <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
-                    <CardHeader className="flex flex-row items-center justify-between gap-2">
+                    <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                       <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">RECENT INQUIRIES</CardTitle>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={contactClicks.length === 0}
-                        onClick={() => {
-                          const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-                          const header = ["id", "channel", "created_at", "user_id", "full_name", "phone", "plan_name", "plan_category", "plan_status", "plan_expires_at"];
-                          const rows = contactClicks.map((c) => {
-                            const prof = c.user_id ? profiles.find((p) => p.user_id === c.user_id) : null;
-                            const clickTime = new Date(c.created_at).getTime();
-                            const userPlans = c.user_id ? paidPlans.filter((p) => p.user_id === c.user_id) : [];
-                            // Plan active at click time, else most recent prior plan, else latest
-                            const plan =
-                              userPlans.find((p) => {
-                                const paid = new Date(p.paid_at).getTime();
-                                const exp = new Date(p.expires_at).getTime();
-                                return p.status === "active" && paid <= clickTime && exp >= clickTime;
-                              }) ??
-                              userPlans
-                                .filter((p) => new Date(p.paid_at).getTime() <= clickTime)
-                                .sort((a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime())[0] ??
-                              userPlans[0];
-                            return [
-                              c.id,
-                              c.channel,
-                              c.created_at,
-                              c.user_id ?? "",
-                              prof?.full_name ?? "",
-                              prof?.phone ?? "",
-                              plan?.plan_name ?? "",
-                              plan?.plan_category ?? "",
-                              plan?.status ?? "",
-                              plan?.expires_at ?? "",
-                            ].map(esc).join(",");
-                          });
-                          const csv = [header.join(","), ...rows].join("\n");
-                          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement("a");
-                          a.href = url;
-                          a.download = `contact-clicks-${new Date().toISOString().slice(0, 10)}.csv`;
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                          URL.revokeObjectURL(url);
-                        }}
-                      >
-                        <Download className="w-4 h-4 mr-2" />Export CSV
-                      </Button>
+                      <div className="flex items-center gap-2 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
+                          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            value={inquiryPhone}
+                            onChange={(e) => setInquiryPhone(e.target.value)}
+                            placeholder="Filter by phone…"
+                            className="pl-9 bg-sport-dark/50 border-primary/20"
+                          />
+                          {inquiryPhone && (
+                            <button
+                              type="button"
+                              onClick={() => setInquiryPhone("")}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                            >
+                              clear
+                            </button>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={filteredClicks.length === 0}
+                          onClick={() => {
+                            const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+                            const header = ["id", "channel", "created_at", "user_id", "full_name", "phone", "plan_name", "plan_category", "plan_status", "plan_expires_at"];
+                            const rows = filteredClicks.map((c) => {
+                              const prof = c.user_id ? profiles.find((p) => p.user_id === c.user_id) : null;
+                              const clickTime = new Date(c.created_at).getTime();
+                              const userPlans = c.user_id ? paidPlans.filter((p) => p.user_id === c.user_id) : [];
+                              const plan =
+                                userPlans.find((p) => {
+                                  const paid = new Date(p.paid_at).getTime();
+                                  const exp = new Date(p.expires_at).getTime();
+                                  return p.status === "active" && paid <= clickTime && exp >= clickTime;
+                                }) ??
+                                userPlans
+                                  .filter((p) => new Date(p.paid_at).getTime() <= clickTime)
+                                  .sort((a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime())[0] ??
+                                userPlans[0];
+                              return [
+                                c.id,
+                                c.channel,
+                                c.created_at,
+                                c.user_id ?? "",
+                                prof?.full_name ?? "",
+                                prof?.phone ?? "",
+                                plan?.plan_name ?? "",
+                                plan?.plan_category ?? "",
+                                plan?.status ?? "",
+                                plan?.expires_at ?? "",
+                              ].map(esc).join(",");
+                            });
+                            const csv = [header.join(","), ...rows].join("\n");
+                            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            const suffix = phoneQ ? `-phone-${phoneQ}` : "";
+                            a.download = `contact-clicks-${new Date().toISOString().slice(0, 10)}${suffix}.csv`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          }}
+                        >
+                          <Download className="w-4 h-4 mr-2" />Export CSV{phoneQ ? " (filtered)" : ""}
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      {contactClicks.length === 0 ? (
-                        <p className="text-muted-foreground text-center py-8">No contact button clicks yet.</p>
+                      {filteredClicks.length === 0 ? (
+                        <p className="text-muted-foreground text-center py-8">{phoneQ ? "No inquiries match this phone number." : "No contact button clicks yet."}</p>
                       ) : (
                         <div className="space-y-2 max-h-[480px] overflow-y-auto">
-                          {contactClicks.slice(0, 100).map((c) => (
+                          {filteredClicks.slice(0, 100).map((c) => (
                             <div key={c.id} className="bg-sport-dark/50 border border-primary/20 rounded-lg p-3 flex items-center gap-3 text-sm">
                               {c.channel === "whatsapp" ? (
                                 <Badge className="bg-[#25D366] text-white"><MessageCircle className="w-3 h-3 mr-1" />WhatsApp</Badge>
