@@ -537,13 +537,21 @@ const AdminDashboardPage = () => {
           <TabsContent value="inquiries">
             {(() => {
               const now = Date.now();
-              const since = (days: number) => contactClicks.filter((c) => now - new Date(c.created_at).getTime() < days * 86400000);
-              const wa = contactClicks.filter((c) => c.channel === "whatsapp");
-              const call = contactClicks.filter((c) => c.channel === "call");
+              const phoneQ = inquiryPhone.replace(/\D/g, "");
+              const filteredClicks = phoneQ
+                ? contactClicks.filter((c) => {
+                    if (!c.user_id) return false;
+                    const prof = profiles.find((p) => p.user_id === c.user_id);
+                    return (prof?.phone ?? "").replace(/\D/g, "").includes(phoneQ);
+                  })
+                : contactClicks;
+              const since = (days: number) => filteredClicks.filter((c) => now - new Date(c.created_at).getTime() < days * 86400000);
+              const wa = filteredClicks.filter((c) => c.channel === "whatsapp");
+              const call = filteredClicks.filter((c) => c.channel === "call");
               const last7 = since(7);
               const wa7 = last7.filter((c) => c.channel === "whatsapp").length;
               const call7 = last7.filter((c) => c.channel === "call").length;
-              const total = contactClicks.length || 1;
+              const total = filteredClicks.length || 1;
               const waPct = Math.round((wa.length / total) * 100);
               const callPct = 100 - waPct;
               return (
