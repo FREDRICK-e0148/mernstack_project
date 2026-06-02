@@ -579,7 +579,7 @@ const AdminDashboardPage = () => {
                       <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Top channel</CardTitle></CardHeader>
                       <CardContent>
                         <p className="font-display text-3xl text-sport-dark-foreground">
-                          {contactClicks.length === 0 ? "—" : wa.length >= call.length ? "WhatsApp" : "Call"}
+                          {filteredClicks.length === 0 ? "—" : wa.length >= call.length ? "WhatsApp" : "Call"}
                         </p>
                       </CardContent>
                     </Card>
