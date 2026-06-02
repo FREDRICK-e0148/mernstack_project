@@ -577,8 +577,30 @@ const AdminDashboardPage = () => {
                   </div>
 
                   <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between gap-2">
                       <CardTitle className="font-display text-2xl text-sport-dark-foreground tracking-wider">RECENT INQUIRIES</CardTitle>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={contactClicks.length === 0}
+                        onClick={() => {
+                          const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+                          const header = ["id", "channel", "created_at", "user_id"];
+                          const rows = contactClicks.map((c) => [c.id, c.channel, c.created_at, c.user_id ?? ""].map(esc).join(","));
+                          const csv = [header.join(","), ...rows].join("\n");
+                          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `contact-clicks-${new Date().toISOString().slice(0, 10)}.csv`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        }}
+                      >
+                        <Download className="w-4 h-4 mr-2" />Export CSV
+                      </Button>
                     </CardHeader>
                     <CardContent>
                       {contactClicks.length === 0 ? (
