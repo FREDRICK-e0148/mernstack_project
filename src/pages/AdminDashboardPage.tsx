@@ -559,7 +559,7 @@ const AdminDashboardPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
                       <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Total clicks</CardTitle></CardHeader>
-                      <CardContent><p className="font-display text-3xl text-sport-dark-foreground">{contactClicks.length}</p></CardContent>
+                      <CardContent><p className="font-display text-3xl text-sport-dark-foreground">{filteredClicks.length}</p></CardContent>
                     </Card>
                     <Card className="bg-card/10 backdrop-blur-lg border-primary/20">
                       <CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2"><MessageCircle className="w-4 h-4 text-[#25D366]" />WhatsApp</CardTitle></CardHeader>
