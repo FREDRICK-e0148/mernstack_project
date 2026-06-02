@@ -51,6 +51,7 @@ const AdminDashboardPage = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [enrollmentsAll, setEnrollmentsAll] = useState<any[]>([]);
   const [userSearch, setUserSearch] = useState("");
+  const [inquiryPhone, setInquiryPhone] = useState("");
   const [viewUser, setViewUser] = useState<AuthUser | null>(null);
 
   // refund/cancel dialog
