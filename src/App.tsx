@@ -25,6 +25,34 @@ const PageFallback = () => (
   </div>
 );
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/enroll" element={<EnrollmentPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/plans" element={<PlansPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/admin-login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/staff" element={<StaffPortalPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
@@ -33,22 +61,13 @@ const App = () => (
         <Sonner />
         <AuthProvider>
           <Suspense fallback={<PageFallback />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/enroll" element={<EnrollmentPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/plans" element={<PlansPage />} />
-              <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/admin-login" element={<AdminLoginPage />} />
-              <Route path="/admin" element={<AdminDashboardPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </Suspense>
         </AuthProvider>
       </TooltipProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );
+
 
 export default App;
