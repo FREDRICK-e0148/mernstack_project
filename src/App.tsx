@@ -14,6 +14,7 @@ const PlansPage = lazy(() => import("./pages/PlansPage.tsx"));
 const PaymentPage = lazy(() => import("./pages/PaymentPage.tsx"));
 const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage.tsx"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage.tsx"));
+const StaffPortalPage = lazy(() => import("./pages/StaffPortalPage.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
