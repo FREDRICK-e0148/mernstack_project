@@ -138,7 +138,7 @@ const MembersTab = ({ isAdmin }: { isAdmin: boolean }) => {
       if (photo_url) payload.photo_url = photo_url;
 
       if (editing) {
-        const { error } = await supabase.from("members").update(payload).eq("id", editing.id);
+        const { error } = await supabase.from("members").update(payload as never).eq("id", editing.id);
         if (error) throw error;
         toast({ title: "Member updated" });
       } else {
