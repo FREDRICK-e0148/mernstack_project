@@ -51,17 +51,16 @@ const AdminLoginPage = () => {
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+        .eq("user_id", user.id);
 
-      if (!roles) {
+      const list = (roles ?? []).map((r) => r.role as string);
+      if (!list.includes("admin") && !list.includes("staff")) {
         await supabase.auth.signOut();
-        throw new Error("You do not have admin access.");
+        throw new Error("You do not have staff or admin access.");
       }
 
-      toast({ title: "Welcome, Admin! 🛡️", description: "Redirecting to dashboard..." });
-      navigate("/admin");
+      toast({ title: "Welcome back!", description: "Redirecting to your workspace..." });
+      navigate(list.includes("admin") ? "/admin" : "/staff");
     } catch (err: any) {
       toast({ title: "Login failed", description: err.message, variant: "destructive" });
     } finally {

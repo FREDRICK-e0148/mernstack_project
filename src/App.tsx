@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +15,7 @@ const PlansPage = lazy(() => import("./pages/PlansPage.tsx"));
 const PaymentPage = lazy(() => import("./pages/PaymentPage.tsx"));
 const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage.tsx"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage.tsx"));
+const StaffPortalPage = lazy(() => import("./pages/StaffPortalPage.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
@@ -24,6 +26,34 @@ const PageFallback = () => (
   </div>
 );
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/enroll" element={<EnrollmentPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/plans" element={<PlansPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/admin-login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/staff" element={<StaffPortalPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
@@ -32,22 +62,13 @@ const App = () => (
         <Sonner />
         <AuthProvider>
           <Suspense fallback={<PageFallback />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/enroll" element={<EnrollmentPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/plans" element={<PlansPage />} />
-              <Route path="/payment" element={<PaymentPage />} />
-              <Route path="/admin-login" element={<AdminLoginPage />} />
-              <Route path="/admin" element={<AdminDashboardPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </Suspense>
         </AuthProvider>
       </TooltipProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );
+
 
 export default App;
