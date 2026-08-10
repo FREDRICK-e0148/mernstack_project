@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance: {
+        Row: {
+          check_in_at: string
+          check_in_date: string
+          created_at: string
+          id: string
+          member_id: string
+          method: string
+          recorded_by: string | null
+        }
+        Insert: {
+          check_in_at?: string
+          check_in_date?: string
+          created_at?: string
+          id?: string
+          member_id: string
+          method?: string
+          recorded_by?: string | null
+        }
+        Update: {
+          check_in_at?: string
+          check_in_date?: string
+          created_at?: string
+          id?: string
+          member_id?: string
+          method?: string
+          recorded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_clicks: {
         Row: {
           channel: string
@@ -115,6 +153,221 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      member_payments: {
+        Row: {
+          amount: number
+          collected_by: string | null
+          created_at: string
+          id: string
+          member_id: string
+          notes: string | null
+          paid_at: string
+          payment_method: string
+          period_end: string | null
+          period_start: string | null
+          plan_id: string | null
+          plan_name: string | null
+          receipt_no: string
+        }
+        Insert: {
+          amount: number
+          collected_by?: string | null
+          created_at?: string
+          id?: string
+          member_id: string
+          notes?: string | null
+          paid_at?: string
+          payment_method: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_id?: string | null
+          plan_name?: string | null
+          receipt_no?: string
+        }
+        Update: {
+          amount?: number
+          collected_by?: string | null
+          created_at?: string
+          id?: string
+          member_id?: string
+          notes?: string | null
+          paid_at?: string
+          payment_method?: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_id?: string | null
+          plan_name?: string | null
+          receipt_no?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_payments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string | null
+          dob: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relation: string | null
+          full_name: string
+          gender: string | null
+          id: string
+          is_active: boolean
+          member_code: string
+          membership_expiry: string | null
+          membership_start: string | null
+          notes: string | null
+          phone: string
+          photo_url: string | null
+          plan_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          dob?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          full_name: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean
+          member_code: string
+          membership_expiry?: string | null
+          membership_start?: string | null
+          notes?: string | null
+          phone: string
+          photo_url?: string | null
+          plan_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          dob?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
+          full_name?: string
+          gender?: string | null
+          id?: string
+          is_active?: boolean
+          member_code?: string
+          membership_expiry?: string | null
+          membership_start?: string | null
+          notes?: string | null
+          phone?: string
+          photo_url?: string | null
+          plan_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      membership_plans: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          duration_days: number
+          fee: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_days?: number
+          fee?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_days?: number
+          fee?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      org_settings: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          logo_url: string | null
+          org_name: string
+          phone: string | null
+          pool_info: string | null
+          receipt_footer: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          org_name?: string
+          phone?: string | null
+          pool_info?: string | null
+          receipt_footer?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          org_name?: string
+          phone?: string | null
+          pool_info?: string | null
+          receipt_footer?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -274,9 +527,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_staff_or_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -404,7 +658,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "staff"],
     },
   },
 } as const
