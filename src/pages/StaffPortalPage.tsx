@@ -13,6 +13,8 @@ import PaymentsTab from "@/components/mgmt/PaymentsTab";
 import CheckInTab from "@/components/mgmt/CheckInTab";
 import ReportsTab from "@/components/mgmt/ReportsTab";
 import SettingsTab from "@/components/mgmt/SettingsTab";
+import AttendanceHeatmap from "@/components/mgmt/AttendanceHeatmap";
+import AuditLogTab from "@/components/mgmt/AuditLogTab";
 
 const StaffPortalPage = () => {
   const navigate = useNavigate();
