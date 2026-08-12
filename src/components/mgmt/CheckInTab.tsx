@@ -85,7 +85,13 @@ const CheckInTab = () => {
       }
 
       const left = daysLeft(member.membership_expiry);
-      setResult({
+      await logAudit({
+        action: "attendance.checkin",
+        entity: "attendance",
+        entity_id: member.id,
+        entity_label: `${member.full_name} (${member.member_code})`,
+        details: { method, days_left: left ?? "" },
+      });
         ok: true,
         title: "Check-in successful",
         detail: `${member.full_name} (${member.member_code}) · ${left} day${left === 1 ? "" : "s"} left`,
