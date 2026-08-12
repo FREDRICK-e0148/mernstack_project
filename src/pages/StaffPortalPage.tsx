@@ -73,9 +73,11 @@ const StaffPortalPage = () => {
             <TabsTrigger value="overview" className="text-xs uppercase tracking-wider">Dashboard</TabsTrigger>
             <TabsTrigger value="members" className="text-xs uppercase tracking-wider">Members</TabsTrigger>
             <TabsTrigger value="checkin" className="text-xs uppercase tracking-wider">Check-in</TabsTrigger>
+            <TabsTrigger value="attendance" className="text-xs uppercase tracking-wider">Attendance</TabsTrigger>
             <TabsTrigger value="payments" className="text-xs uppercase tracking-wider">Payments</TabsTrigger>
             <TabsTrigger value="plans" className="text-xs uppercase tracking-wider">Plans</TabsTrigger>
             <TabsTrigger value="reports" className="text-xs uppercase tracking-wider">Reports</TabsTrigger>
+            <TabsTrigger value="audit" className="text-xs uppercase tracking-wider">Activity Log</TabsTrigger>
             <TabsTrigger value="settings" className="text-xs uppercase tracking-wider">Settings</TabsTrigger>
           </TabsList>
 
@@ -83,9 +85,11 @@ const StaffPortalPage = () => {
             <TabsContent value="overview"><OverviewTab /></TabsContent>
             <TabsContent value="members"><MembersTab isAdmin={isAdmin} /></TabsContent>
             <TabsContent value="checkin"><CheckInTab /></TabsContent>
+            <TabsContent value="attendance"><AttendanceHeatmap /></TabsContent>
             <TabsContent value="payments"><PaymentsTab /></TabsContent>
             <TabsContent value="plans"><PlansTab isAdmin={isAdmin} /></TabsContent>
             <TabsContent value="reports"><ReportsTab /></TabsContent>
+            <TabsContent value="audit"><AuditLogTab /></TabsContent>
             <TabsContent value="settings"><SettingsTab isAdmin={isAdmin} /></TabsContent>
           </div>
         </Tabs>
