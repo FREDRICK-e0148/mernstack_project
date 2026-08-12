@@ -92,6 +92,7 @@ const CheckInTab = () => {
         entity_label: `${member.full_name} (${member.member_code})`,
         details: { method, days_left: left ?? "" },
       });
+      setResult({
         ok: true,
         title: "Check-in successful",
         detail: `${member.full_name} (${member.member_code}) · ${left} day${left === 1 ? "" : "s"} left`,
