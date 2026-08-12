@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
-import { IndianRupee, Loader2, Printer, Receipt, Search } from "lucide-react";
+import { FileDown, IndianRupee, Loader2, Printer, Receipt, Search, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logAudit } from "@/lib/audit";
+import { downloadReceiptPdf, shareReceiptPdf } from "@/lib/receiptPdf";
 import {
   addDaysISO,
   fmtDate,
@@ -100,6 +102,14 @@ const PaymentsTab = () => {
           .eq("id", memberId);
       }
 
+      await logAudit({
+        action: "payment.create",
+        entity: "payment",
+        entity_id: (data as MemberPayment).id,
+        entity_label: `${data.receipt_no} · ${memberById.get(memberId)?.full_name ?? "member"}`,
+        details: { amount: Number(amount), method, plan: plan?.name ?? "none" },
+      });
+
       toast({ title: "Payment recorded", description: `Receipt ${data.receipt_no}` });
       setOpen(false);
       setNotes("");
@@ -171,6 +181,9 @@ const PaymentsTab = () => {
                       <span className="font-display text-2xl text-sport-dark-foreground tracking-wider">{fmtINR(p.amount)}</span>
                       <Button size="sm" variant="outline" onClick={() => setReceipt(p)} className="h-7 text-[11px] border-primary/30 text-primary">
                         <Receipt className="w-3 h-3 mr-1" /> Receipt
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => downloadReceiptPdf(p, memberById.get(p.member_id), org)} className="h-7 text-[11px] border-primary/30 text-primary">
+                        <FileDown className="w-3 h-3 mr-1" /> PDF
                       </Button>
                     </div>
                   </CardContent>
@@ -246,9 +259,25 @@ const PaymentsTab = () => {
               {org?.receipt_footer && <p className="text-[11px] text-center text-muted-foreground pt-2">{org.receipt_footer}</p>}
             </div>
           )}
-          <Button variant="outline" onClick={() => window.print()} className="border-primary/30 text-primary text-xs uppercase">
-            <Printer className="w-3 h-3 mr-1" /> Print receipt
-          </Button>
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant="outline" onClick={() => window.print()} className="border-primary/30 text-primary text-xs uppercase">
+              <Printer className="w-3 h-3 mr-1" /> Print
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => receipt && downloadReceiptPdf(receipt, memberById.get(receipt.member_id), org)}
+              className="border-primary/30 text-primary text-xs uppercase"
+            >
+              <FileDown className="w-3 h-3 mr-1" /> PDF
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => receipt && shareReceiptPdf(receipt, memberById.get(receipt.member_id), org)}
+              className="border-primary/30 text-primary text-xs uppercase"
+            >
+              <Share2 className="w-3 h-3 mr-1" /> Share
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logAudit } from "@/lib/audit";
 import type { OrgSettings } from "@/lib/mgmt";
 
 const SettingsTab = ({ isAdmin }: { isAdmin: boolean }) => {
@@ -32,8 +33,12 @@ const SettingsTab = ({ isAdmin }: { isAdmin: boolean }) => {
       })
       .eq("id", org.id);
     setSaving(false);
-    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: "Organization settings saved" });
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    await logAudit({ action: "settings.update", entity: "settings", entity_id: org.id, entity_label: org.org_name });
+    toast({ title: "Organization settings saved" });
   };
 
   if (!org) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
