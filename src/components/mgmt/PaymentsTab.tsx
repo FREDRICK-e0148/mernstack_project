@@ -259,9 +259,25 @@ const PaymentsTab = () => {
               {org?.receipt_footer && <p className="text-[11px] text-center text-muted-foreground pt-2">{org.receipt_footer}</p>}
             </div>
           )}
-          <Button variant="outline" onClick={() => window.print()} className="border-primary/30 text-primary text-xs uppercase">
-            <Printer className="w-3 h-3 mr-1" /> Print receipt
-          </Button>
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant="outline" onClick={() => window.print()} className="border-primary/30 text-primary text-xs uppercase">
+              <Printer className="w-3 h-3 mr-1" /> Print
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => receipt && downloadReceiptPdf(receipt, memberById.get(receipt.member_id), org)}
+              className="border-primary/30 text-primary text-xs uppercase"
+            >
+              <FileDown className="w-3 h-3 mr-1" /> PDF
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => receipt && shareReceiptPdf(receipt, memberById.get(receipt.member_id), org)}
+              className="border-primary/30 text-primary text-xs uppercase"
+            >
+              <Share2 className="w-3 h-3 mr-1" /> Share
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
