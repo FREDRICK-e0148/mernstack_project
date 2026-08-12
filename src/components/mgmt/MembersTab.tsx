@@ -225,6 +225,9 @@ const MembersTab = ({ isAdmin }: { isAdmin: boolean }) => {
             className="pl-9 bg-sport-dark/50 border-primary/30 text-sport-dark-foreground"
           />
         </div>
+        <Button variant="outline" onClick={() => setImportOpen(true)} className="border-primary/30 text-primary uppercase tracking-wider text-xs">
+          <Upload className="w-4 h-4 mr-1" /> Import CSV
+        </Button>
         <Button onClick={openNew} className="bg-sport-energy hover:bg-sport-energy/90 text-sport-energy-foreground uppercase tracking-wider text-xs">
           <UserPlus className="w-4 h-4 mr-1" /> Register Member
         </Button>
