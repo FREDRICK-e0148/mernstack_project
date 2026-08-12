@@ -142,12 +142,29 @@ const MembersTab = ({ isAdmin }: { isAdmin: boolean }) => {
       if (editing) {
         const { error } = await supabase.from("members").update(payload as never).eq("id", editing.id);
         if (error) throw error;
+        await logAudit({
+          action: "member.update",
+          entity: "member",
+          entity_id: editing.id,
+          entity_label: `${form.full_name.trim()} (${editing.member_code})`,
+          details: { phone: form.phone.trim(), plan: plan?.name ?? "none" },
+        });
         toast({ title: "Member updated" });
       } else {
-        const { error } = await supabase
+        const member_code = genMemberCode();
+        const { data, error } = await supabase
           .from("members")
-          .insert({ ...payload, member_code: genMemberCode() } as never);
+          .insert({ ...payload, member_code } as never)
+          .select()
+          .single();
         if (error) throw error;
+        await logAudit({
+          action: "member.create",
+          entity: "member",
+          entity_id: (data as Member | null)?.id ?? null,
+          entity_label: `${form.full_name.trim()} (${member_code})`,
+          details: { phone: form.phone.trim(), plan: plan?.name ?? "none" },
+        });
         toast({ title: "Member registered" });
       }
       setOpen(false);
@@ -161,13 +178,29 @@ const MembersTab = ({ isAdmin }: { isAdmin: boolean }) => {
 
   const toggleActive = async (m: Member) => {
     await supabase.from("members").update({ is_active: !m.is_active }).eq("id", m.id);
+    await logAudit({
+      action: m.is_active ? "member.deactivate" : "member.activate",
+      entity: "member",
+      entity_id: m.id,
+      entity_label: `${m.full_name} (${m.member_code})`,
+    });
     load();
   };
 
   const remove = async (m: Member) => {
     const { error } = await supabase.from("members").delete().eq("id", m.id);
-    if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
-    else load();
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    await logAudit({
+      action: "member.delete",
+      entity: "member",
+      entity_id: m.id,
+      entity_label: `${m.full_name} (${m.member_code})`,
+      details: { phone: m.phone },
+    });
+    load();
   };
 
   const q = query.trim().toLowerCase();
