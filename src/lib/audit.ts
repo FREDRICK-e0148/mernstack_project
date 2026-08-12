@@ -28,12 +28,12 @@ export const logAudit = async (entry: {
     if (!user) return;
     await supabase.from("audit_logs").insert({
       actor_id: user.id,
-      actor_email: user.email ?? null,
+      actor_email: user.email ?? undefined,
       action: entry.action,
       entity: entry.entity,
-      entity_id: entry.entity_id ?? null,
-      entity_label: entry.entity_label ?? null,
-      details: entry.details ?? {},
+      entity_id: entry.entity_id ?? undefined,
+      entity_label: entry.entity_label ?? undefined,
+      details: (entry.details ?? {}) as never,
     });
   } catch {
     /* silent */
