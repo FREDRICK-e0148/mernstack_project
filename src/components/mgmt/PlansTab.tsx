@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { motion } from "framer-motion";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logAudit } from "@/lib/audit";
 import { fmtINR, type MembershipPlan } from "@/lib/mgmt";
 
 const CATEGORIES = ["membership", "coaching", "weekend", "gym", "shuttle", "aqua-zumba"];
