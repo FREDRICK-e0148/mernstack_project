@@ -365,6 +365,8 @@ const MembersTab = ({ isAdmin }: { isAdmin: boolean }) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BulkImportDialog open={importOpen} onOpenChange={setImportOpen} onImported={load} />
     </div>
   );
 };
