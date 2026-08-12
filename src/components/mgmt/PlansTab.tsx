@@ -77,6 +77,13 @@ const PlansTab = ({ isAdmin }: { isAdmin: boolean }) => {
       toast({ title: "Save failed", description: error.message, variant: "destructive" });
       return;
     }
+    await logAudit({
+      action: editing ? "plan.update" : "plan.create",
+      entity: "plan",
+      entity_id: editing?.id ?? null,
+      entity_label: payload.name,
+      details: { fee: payload.fee, duration_days: payload.duration_days, category: payload.category },
+    });
     toast({ title: editing ? "Plan updated" : "Plan created" });
     setOpen(false);
     load();
@@ -84,8 +91,12 @@ const PlansTab = ({ isAdmin }: { isAdmin: boolean }) => {
 
   const remove = async (p: MembershipPlan) => {
     const { error } = await supabase.from("membership_plans").delete().eq("id", p.id);
-    if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
-    else load();
+    if (error) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    await logAudit({ action: "plan.delete", entity: "plan", entity_id: p.id, entity_label: p.name, details: { fee: p.fee } });
+    load();
   };
 
   return (

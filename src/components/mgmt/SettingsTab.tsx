@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { logAudit } from "@/lib/audit";
 import type { OrgSettings } from "@/lib/mgmt";
 
 const SettingsTab = ({ isAdmin }: { isAdmin: boolean }) => {
