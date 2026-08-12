@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
-import { Search, UserPlus, Loader2, QrCode, Pencil, Trash2, Power } from "lucide-react";
+import { Search, UserPlus, Loader2, QrCode, Pencil, Trash2, Power, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import QRCode from "qrcode";
+import BulkImportDialog from "@/components/mgmt/BulkImportDialog";
+import { logAudit } from "@/lib/audit";
 import {
   addDaysISO,
   fmtDate,
