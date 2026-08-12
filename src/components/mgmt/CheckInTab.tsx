@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Camera, CameraOff, CheckCircle2, Loader2, Search, XCircle } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useToast } from "@/hooks/use-toast";
+import { logAudit } from "@/lib/audit";
 import { daysLeft, fmtDate, fmtDateTime, isExpired, todayISO, type AttendanceRow, type Member } from "@/lib/mgmt";
 
 type Result = { ok: boolean; title: string; detail: string; member?: Member };
