@@ -58,6 +58,7 @@ const MembersTab = ({ isAdmin }: { isAdmin: boolean }) => {
   const [saving, setSaving] = useState(false);
   const [qrMember, setQrMember] = useState<Member | null>(null);
   const [qrUrl, setQrUrl] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
 
   const load = async () => {
     const [m, p] = await Promise.all([
