@@ -33,8 +33,12 @@ const SettingsTab = ({ isAdmin }: { isAdmin: boolean }) => {
       })
       .eq("id", org.id);
     setSaving(false);
-    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: "Organization settings saved" });
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    await logAudit({ action: "settings.update", entity: "settings", entity_id: org.id, entity_label: org.org_name });
+    toast({ title: "Organization settings saved" });
   };
 
   if (!org) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
