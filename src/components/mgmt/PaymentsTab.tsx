@@ -102,6 +102,14 @@ const PaymentsTab = () => {
           .eq("id", memberId);
       }
 
+      await logAudit({
+        action: "payment.create",
+        entity: "payment",
+        entity_id: (data as MemberPayment).id,
+        entity_label: `${data.receipt_no} · ${memberById.get(memberId)?.full_name ?? "member"}`,
+        details: { amount: Number(amount), method, plan: plan?.name ?? "none" },
+      });
+
       toast({ title: "Payment recorded", description: `Receipt ${data.receipt_no}` });
       setOpen(false);
       setNotes("");
@@ -173,6 +181,9 @@ const PaymentsTab = () => {
                       <span className="font-display text-2xl text-sport-dark-foreground tracking-wider">{fmtINR(p.amount)}</span>
                       <Button size="sm" variant="outline" onClick={() => setReceipt(p)} className="h-7 text-[11px] border-primary/30 text-primary">
                         <Receipt className="w-3 h-3 mr-1" /> Receipt
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => downloadReceiptPdf(p, memberById.get(p.member_id), org)} className="h-7 text-[11px] border-primary/30 text-primary">
+                        <FileDown className="w-3 h-3 mr-1" /> PDF
                       </Button>
                     </div>
                   </CardContent>
