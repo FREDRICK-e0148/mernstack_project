@@ -19,6 +19,8 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import MemberQrCard from "@/components/MemberQrCard";
+
 
 interface Candidate {
   id: string;
