@@ -19,6 +19,8 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import MemberQrCard from "@/components/MemberQrCard";
+
 
 interface Candidate {
   id: string;
@@ -376,17 +378,21 @@ const DashboardPage = () => {
                 : "Track your plan, progress and personalized diet."}
             </p>
           </div>
-          <Card className="bg-card/5 backdrop-blur-xl border-primary/40 shadow-lg shadow-primary/20">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Hash className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-primary/80 text-[10px] uppercase tracking-[0.3em] font-semibold">Member ID</p>
-                <p className="font-display text-2xl text-sport-dark-foreground tracking-[0.15em]">{memberId}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex flex-wrap gap-3">
+            <Card className="bg-card/5 backdrop-blur-xl border-primary/40 shadow-lg shadow-primary/20">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                  <Hash className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-primary/80 text-[10px] uppercase tracking-[0.3em] font-semibold">Member ID</p>
+                  <p className="font-display text-2xl text-sport-dark-foreground tracking-[0.15em]">{memberId}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <MemberQrCard memberId={memberId} name={activeSwimmer?.name ?? user?.email ?? null} />
+          </div>
+
         </motion.div>
 
         {/* Stats */}
